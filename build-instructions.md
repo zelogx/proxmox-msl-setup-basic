@@ -36,8 +36,6 @@ Therefore, Pritunl should ideally be placed under the home LAN segment.
 192.168.77.2  
 This becomes the **static-route next-hop** when configuring the internet router.
 
-(Auto-detected, used only for reference)
-
 ---
 
 ### c. vpndmzvn (new): 192.168.80.0/24, GW: 192.168.80.1

@@ -12,10 +12,10 @@ docs/assets/zelog-MSL-Setup-withID.svg
 
 
 a. MainLan(vmbr0既設) : 192.168.77.0/24: GW:.254
-　→　自宅ラボ・家電 mainのcentos stream 10(.1 zelogx webサーバ, nextcloud, samba, 個人用OpenVPN/Wireguard, Unbound DNSなど), 家庭のalexaやTV, PS5, Internet router, 家族のPC, スマホなど様々)。
+　→　自宅ラボ・家電 mainのcentos stream 10(.1 zelogx webサーバ, nextcloud, samba, 個人用OpenVPN/Wireguard, Unbound DNSなど), 家庭のalexaやTV, PS5, Internet router, 家族のPC, スマホなど様々。
 　後続の「Pritunlのmainlan側のIP」がこのIPレンジ内でなくてはならない。
 　インターネットルータの多くはLAN側IPにしかポート転送できないので、インターネットルータの直下のLANに接続してあることが望ましい。
-b. Proxmox PVEのmainlanのIP:192.168.77.2:インターネットルータへのstatic route追加時、宛先IPとなる。(自動取得、表示用)
+b. Proxmox PVEのmainlanのIP:192.168.77.2:インターネットルータへのstatic route追加時、宛先IPとなる。
 c. vpndmzvn(新設): 192.168.80.0/24 GW:192.168.80.1 VPNクライアントが各開発PJ用サブネットへアクセスするための経路　最低/30のネットワークアドレスが必要。
 d. VPNクライアントへの配布IPレンジ：192.168.81.0/24
 	→wgとovpnで分けられる。例：192.168.81.2-126/25, 192.168.81.129-254/25
