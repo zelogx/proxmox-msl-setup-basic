@@ -164,17 +164,21 @@ GUI → <HOST> → Firewall → Firewall
 Rules:
 # On  Type  Action  Macro  Protocol  Source             S.Port  Destination       D.Port  Log level
 # -------------------------------------------------------------------------------------------------
-✓    FORWARD ACCEPT  -      -         +sdn/vnetpj08-all  -       +sdn/vnetpj08-all  -       nolog
-✓    FORWARD ACCEPT  -      -         +sdn/vnetpj07-all  -       +sdn/vnetpj07-all  -       nolog
-✓    FORWARD ACCEPT  -      -         +sdn/vnetpj06-all  -       +sdn/vnetpj05-all  -       nolog
-✓    FORWARD ACCEPT  -      -         +sdn/vnetpj05-all  -       +sdn/vnetpj05-all  -       nolog
-✓    FORWARD ACCEPT  -      -         +sdn/vnetpj04-all  -       +sdn/vnetpj04-all  -       nolog
-✓    FORWARD ACCEPT  -      -         +sdn/vnetpj03-all  -       +sdn/vnetpj03-all  -       nolog
-✓    FORWARD ACCEPT  -      -         +sdn/vnetpj02-all  -       +sdn/vnetpj02-all  -       nolog
-✓    FORWARD ACCEPT  -      -         +sdn/vnetpj01-all  -       +sdn/vnetpj01-all  -       nolog
-✓    FORWARD ACCEPT  -      tcp       +dc/devpjs         -       192.168.77.1       53      nolog
-✓    FORWARD ACCEPT  -      udp       +dc/devpjs         -       192.168.77.1       53      nolog
-✓    FORWARD DROP    -      -         +dc/devpjs         -       +dc/all_private_ip -       nolog
+✓    In      ACCEPT  -      -       +mainlan             -       -                  -       nolog *1
+✓    In      ACCEPT  -      ICMP    +vpndmzvn-no-gateway -       +vpndmzvn-gateway  -       nolog *1
+✓    In      ACCEPT  -      ICMP    +vpndmzvn-no-gateway -       +devpjs            -       nolog *1
+✓    FORWARD ACCEPT  -      -       +sdn/vnetpj08-all    -       +sdn/vnetpj08-all  -       nolog
+✓    FORWARD ACCEPT  -      -       +sdn/vnetpj07-all    -       +sdn/vnetpj07-all  -       nolog
+✓    FORWARD ACCEPT  -      -       +sdn/vnetpj06-all    -       +sdn/vnetpj05-all  -       nolog
+✓    FORWARD ACCEPT  -      -       +sdn/vnetpj05-all    -       +sdn/vnetpj05-all  -       nolog
+✓    FORWARD ACCEPT  -      -       +sdn/vnetpj04-all    -       +sdn/vnetpj04-all  -       nolog
+✓    FORWARD ACCEPT  -      -       +sdn/vnetpj03-all    -       +sdn/vnetpj03-all  -       nolog
+✓    FORWARD ACCEPT  -      -       +sdn/vnetpj02-all    -       +sdn/vnetpj02-all  -       nolog
+✓    FORWARD ACCEPT  -      -       +sdn/vnetpj01-all    -       +sdn/vnetpj01-all  -       nolog
+✓    FORWARD ACCEPT  -      tcp     +dc/devpjs           -       192.168.77.1       53      nolog
+✓    FORWARD ACCEPT  -      udp     +dc/devpjs           -       192.168.77.1       53      nolog
+✓    FORWARD DROP    -      -       +dc/devpjs           -       +dc/all_private_ip -       nolog
+*1:Option: for reachability test from Pritunl to GWs
 
 
 

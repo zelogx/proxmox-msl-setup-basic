@@ -141,7 +141,7 @@ All open-source components --- reproducible setup from scratch.
 You will need to provide the following network addresses, which must be configured appropriately.
 If your environment has no additional subnets other than the one connected to Proxmox VE, you can generally keep the example values below as-is — except for (a) and (b), which should be set according to your actual network to avoid conflicts.
 
-![Zelogx MSL Setup Network Overview](docs/assets/zelog-MSL-Setup-withID.svg)
+![Zelogx MSL Setup Network Overview](./docs/assets/zelogx-MSL-Setup-withID.svg)
 
 #### a. MainLan (existing vmbr0): (e.g., 192.168.77.0/24 GW: .254)
 - The network address of your company or home lab’s main LAN.

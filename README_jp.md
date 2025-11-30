@@ -194,7 +194,7 @@ Proxmox VEサーバ一台で
 以下のネットワークアドレスの入力が必要となります。適切な設定を行う必要があります。\
 Proxmox VEが接続しているサブネットワーク以外にセグメントがないという場合には、a,b以外は重複がない限り以下の例のままでもよいかと思います。a,bは現在利用中のネットワークを指定すれば問題ありません。
 
-![Zelogx MSL Setup Network Overview](docs/assets/zelog-MSL-Setup-withID.svg)
+![Zelogx MSL Setup Network Overview](./docs/assets/zelog-MSL-Setup-withID.svg)
 
 #### (a) **MainLan(vmbr0既設):** (例：`192.168.77.0/24` GW: `.254`)
    - 会社・自宅ラボのメインのLANのネットワークアドレス。
