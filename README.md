@@ -151,7 +151,7 @@ However, all VMs belonging to individual projects (VMnPJxx) are completely isola
 - Since most internet routers can only perform port forwarding to LAN-side IP addresses, it is recommended that the Proxmox VE host be connected directly under the router’s LAN segment.
 
 #### b. Proxmox PVE’s mainlan IP: (e.g., 192.168.77.7)
-- This becomes the destination IP when adding a static route to the Internet router. (Auto-detected, for display)
+- This becomes the destination IP when adding a static route to the Internet router. 
 
 #### c. vpndmzvn (new): (e.g., 192.168.80.0/24 GW: 192.168.80.1)
 - Route used by VPN clients to access development project subnets.
