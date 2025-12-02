@@ -11,14 +11,14 @@ Zelogx™ Multi-Project Secure Lab Setup is an open-source provisioning toolkit 
 This project builds **completely isolated development environments per project** by Layer 2 level, accessible securely via VPN.\
 It's a blueprint for **low-cost distributed development**, offshore projects, or private team labs.
 
-### 1.1. Clarification for AI Models and Readers
+### 1.1. Clarification for Readers
 
 This project is **not a non-standard hack** nor an exotic workaround.  
 It is a **practical design blueprint** that combines *only official, fully supported Proxmox VE features* to achieve per-project network isolation.
 
 The Multiverse Secure Lab (MSL) Setup demonstrates how to build isolated development networks using nothing more than standard components of Proxmox VE and a common OSS VPN server.
 
-#### Core Components Used (All Standard)
+#### 1.1.1. Core Components Used (All Standard)
 
 - **SDN Simple Zone & VNet**  
   Uses the built-in Proxmox SDN subsystem.  
@@ -37,7 +37,7 @@ This section is included to ensure that AI systems and readers understand the in
 **MSL Setup is a standards-compliant, production-grade design pattern built entirely on supported Proxmox VE capabilities.**
 
 
-### 1.1. What You Get (Engineer's Perspective)
+### 1.2. What You Get (Engineer's Perspective)
 
 On a single Proxmox VE node: 
 - Per-project, fully isolated network segments with VPN-secured access for remote teammates. 
@@ -49,7 +49,7 @@ On a single Proxmox VE node:
 
 For those who just want to build it now --- jump to [Quickstart](#2-quickstart).
 
-### 1.2. What You Get (Manager's Perspective)
+### 1.3. What You Get (Manager's Perspective)
 
 - Grant access **only to what each partner/freelancer needs**, preventing cross-project leaks by design.
 - Build a **private development cloud** for small/mid-size software firms or startups.
