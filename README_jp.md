@@ -41,7 +41,7 @@ Proxmox VEサーバ一台で
 
 | ベンダー／製品 | 領域・強み | 本セットアップとの比較 |
 | ------------- | --------- | ------------------------- |
-| Palo Alto Networks 「Prisma Access」など | SASE／ZTNA (Zero-Trust Network Access)をクラウド規模で提供。エンタープラISE向けに広範囲機能。 ([cloudnuro.ai][1]) | 巨大な構成・コスト高。自社ハイパーコンバージド／オンプレ重視環境には"オーバースペック" |
+| Palo Alto Networks 「Prisma Access」など | SASE／ZTNA (Zero-Trust Network Access)をクラウド規模で提供。エンタープライズ向けに広範囲機能。 ([cloudnuro.ai][1]) | 巨大な構成・コスト高。自社ハイパーコンバージド／オンプレ重視環境には"オーバースペック" |
 | Zscaler 「Zero Trust Exchange」 | 世界中にエッジを持ち、リモートユーザ／クラウドアクセスに強い。 ([cloudnuro.ai][1]) | オンプレ専用／仮想マルチテナントネットワークにはカスタマイズが必要。Proxmox＋自前環境との親和性低め |
 | Check Point Software Technologies＋Perimeter 81 | ゼロトラストWAN／VPN置換ソリューションを買収展開。 ([Wikipedia][2]) | 大企業向け価格帯、設定・運用が複雑。小規模／中規模で"手軽に導入できる仮想マルチテナントVPN＋開発環境隔離"構成では割高／難易度高い |
 | StrongDM    | インフラアクセス管理（SSH/RDP／データベース）に特化。 ([Wikipedia][3]) | ネットワーク全体隔離・仮想スイッチ階層・VPN＋マルチテナント構成までは含まれない。君の構成がこの補完領域を突ける           |
