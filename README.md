@@ -82,8 +82,8 @@ For those who just want to build it now --- jump to [Quickstart](#2-quickstart).
 The core Proxmox VE (PVE) software is open source and licensed under the GNU Affero General Public License v3 (AGPL v3). According to the official Proxmox stance, no “license fee” is charged — meaning there is no cost required to use the software itself. [Proxmox][1], [Proxmox Forum][2] \
 However, paid subscriptions (support contracts) are offered separately.
 
-[1]: https://pve.proxmox.com/?utm_source=chatgpt.com
-[2]: https://forum.proxmox.com/threads/licensing-is-the-pve-no-subscription-free-usage-legal-and-valid.107184/?utm_source=chatgpt.com
+[1]: https://pve.proxmox.com/
+[2]: https://forum.proxmox.com/threads/licensing-is-the-pve-no-subscription-free-usage-legal-and-valid.107184/
 
 ### 1.5. Target Audience
 

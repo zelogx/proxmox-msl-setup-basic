@@ -1,0 +1,5 @@
+plugins:
+  - jekyll-include-cache
+
+include:
+  - _includes
