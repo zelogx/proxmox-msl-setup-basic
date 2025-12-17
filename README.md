@@ -13,6 +13,10 @@ Official website: https://www.zelogx.com/
 This project builds **completely isolated development environments per project** by Layer 2 level, accessible securely via VPN.\
 It's a blueprint for **low-cost distributed development**, offshore projects, or private team labs.
 
+> If this looks useful but too much work to run manually,
+I’m building MSL Setup Pro: a fully automated version.
+⭐ or “Watch” this repo if you want to hear when it’s ready.
+
 ### 1.1. Clarification for Readers
 
 This project is **not a non-standard hack** nor an exotic workaround.  
