@@ -7,6 +7,7 @@ Zelogx™ Multi-Project Secure Lab Setup is an open-source provisioning toolkit 
 > [日本語版はこちら (README_jp.md)](./README_jp.md)
 
 Official website: https://www.zelogx.com/
+> MSL Setup Pro v1.0.0 (Personal License) was released on 2025-12-19.
 
 ## 1. Overview
 

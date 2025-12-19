@@ -6,6 +6,8 @@ Refer to REAMME_en.md for English documents.
 > [English version is here (README.md)](./README.md)
 
 Official website: https://www.zelogx.com/
+> MSL Setup Pro v1.0.0（Personal License）は 2025-12-19 にリリースされました。
+
 
 # パブリッククラウド開発環境からの脱却
 
