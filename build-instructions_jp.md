@@ -92,8 +92,17 @@ static route
 ### Proxmox SDNブリッジ追加
 #### vpn-dmz-vnet（192.168.80.0/24）追加
 Datacenter → SDN → Zones → Add → Simple
-ID:vpndmz vpn着信用
-ID:devpj  開発ゾーン用
+- ID: **vpndmz** vpn着信用
+- ID: **devpj01** (開発用LAN01)
+- ID: **devpj02** (開発用LAN02)
+- ID: **devpj03** (開発用LAN03)
+- ID: **devpj04** (開発用LAN04)
+- ID: **devpj05** (開発用LAN05)
+- ID: **devpj06** (開発用LAN06)
+- ID: **devpj07** (開発用LAN07)
+- ID: **devpj08** (開発用LAN08)
+
+> v1.1修正: Zoneを開発用LAN個々に作成。プールベースACLで制御時に有効。
 
 #### VNet（仮想L2セグメント）の作成
 
@@ -109,18 +118,25 @@ Subnet:192.168.80.0/24
 GW:192.168.80.1
 
 ##### 開発LAN用
+###### Create Vnet
 Datacenter → SDN → VNets → Create
-ID: (以下開発LAN Vnet ID参照)
-Zone : devpj
-Vnet ID  Subnet         GW
-vnetpj01 172.16.16.0/24 172.16.16.254
-vnetpj02 172.16.17.0/24 172.16.17.254
-vnetpj03 172.16.18.0/24 172.16.18.254
-vnetpj04 172.16.19.0/24 172.16.19.254
-vnetpj05 172.16.20.0/24 172.16.20.254
-vnetpj06 172.16.21.0/24 172.16.21.254
-vnetpj07 172.16.22.0/24 172.16.22.254
-vnetpj08 172.16.23.0/24 172.16.23.254
+作成するVNetとZoneの対応は以下の表を参照のこと
+###### Add Subnet
+Datacenter → SDN → VNets → <click vnet> → Subnets → Create 
+作成するVNetとSubnet,GWの対応は以下の表を参照のこと
+
+| VNet     | Zone    | Subnet         | GW |
+|----------|---------|----------------|---------------|
+| vnetpj01 | devpj01 | 172.16.16.0/24 | 172.16.16.254 |
+| vnetpj02 | devpj02 | 172.16.17.0/24 | 172.16.17.254 |
+| vnetpj03 | devpj03 | 172.16.18.0/24 | 172.16.18.254 |
+| vnetpj04 | devpj04 | 172.16.19.0/24 | 172.16.19.254 |
+| vnetpj05 | devpj05 | 172.16.20.0/24 | 172.16.20.254 |
+| vnetpj06 | devpj06 | 172.16.21.0/24 | 172.16.21.254 |
+| vnetpj07 | devpj07 | 172.16.22.0/24 | 172.16.22.254 |
+| vnetpj08 | devpj08 | 172.16.23.0/24 | 172.16.23.254 |
+
+> v1.1修正: Zoneを開発用LAN個々に作成。プールベースACLで制御時に有効。
 
 ##### Apply
 上記作成後、設定を適用
@@ -526,3 +542,111 @@ Name: 任意のorganization名 (PJ IDと一対一が望ましい)
 Pritunl VPN ServerにはOrganization単位でのみVPNユーザを割り当てることが可能です。
 そのため、Server01(vnetpj01)にUserAAとUserBAだけを割当てるという事ができません。
 上記の場合、可能なのは、Server01(vnetpj01)にアクセス出来るのはOrgA全員、またはOrgB全員（またはその両方）
+
+
+# Goal of v1.1.0
+
+以下はVPNユーザにProxmoxダッシュボードのアクセス権を与え、VPNユーザがVMの操作を出来るようにするという手順。
+VPNユーザにVMを触らせたくない場合は実施不要。
+> なお、若干zoneの作成方法を変更する必要があるのでdevpj zoneを一つしか作ってない場合は、
+devpjXXをプロジェクト数分作成しておく必要がある。
+
+今回のゴール：
+pj01-admin@pve でProxmoxのダッシュボードにログイン出来るようになる。
+ログインすると
+- PJ01用VMだけが見える
+- PJ01用のVMだけ起動・停止・コンソール・設定変更、スナップショット操作、バックアップ操作ができる
+- PJ01用にVMが建てられる。VMが削除できる
+- Datacenterの他PJのVMやストレージ・ノード設定は触れない
+
+# PJ01のVPNユーザがPJ01内にVMを作れるまで
+
+## Group, Pool, Userの作成
+### Poolの作成
+Datacenter -> Permissions -> Pool -> [Create]
+Name:pj01
+(PJ毎にpoolを切らなきゃだめ。他の開発PJ全体でプールを切ると全てのPJxxを触れるようになる)
+
+### Groupの作成
+Datacenter -> Permissions -> Groups -> [Create]
+Name:Pj01Admins
+
+### Userの作成
+Datacenter -> Permissions -> Users -> [Create]
+UserName:pj01Admin
+Realm:Proxmox VE authentication server
+Group:Pj01Admins
+
+## GroupにPermissionとRoleを与える
+(どちらかというとPooolに対して、groupとroleを与えるイメージか？)
+Datacenter -> Permissions -> [Add]
+Path:/pool/pj01
+Group:Pj01Admins
+Role:PVEAdmins
+
+
+## Poolにリソース追加
+
+### リソースpool(PJ01)にリソースを追加する
+これをやらないと、VMが作れない
+
+#### 既存VMを割り当てる
+DataCenter -> pj01 -> Members -> [Add] -> Virtual Machine
+>既存VMが無い場合は不要
+
+#### ストレージを割り当てる
+DataCenter -> pj01 -> Members -> [Add] -> Virtual Machine
+>これを割り当てないと、pj01adminがVM作成時にstorageが全く見えなくなるので結果作れない。
+割当てる必要があるstorageはVMを置く場所、VM作成時のISOイメージ置き場、EFI用のlocalストレージなど
+
+#### SDN Zone ネットワークを割り当てる
+DataCenter -> PVE(node) -> devpjXX -> [Permissions] -> [Add] -> [Group Permission]
+Group:Pj01Admins
+Role:PVEAdmin
+
+- これを割り当てないとVM作成時にNICの所属先bridgeが割り当てられない
+> SDN Zone単位でしか割り当てられない。
+既設zoneは、全てのPJを横断するdevpj(全てのvnetpjXXを包含するもの)だけ
+これを割り当てちゃうと、他のPJのネットワークにVMを作ることが出来てしまう。
+
+> また他PJのvnetの削除、vnetの追加なども出来てしまう。→これは便利だが適切なzone管理が必要。
+ここで初めてzoneという論理境界が必要になったのか判った。
+→ZoneをPJ毎に作成する必要がある(MSL Setup v1.1で改善)手順は修正済み
+
+##### [暫定解決策]devpj zoneを一個しか作らなかった場合の、以下の方法で割り当て可能（ただし、VPNユーザが新たなvnetの作成が出来ない）
+DataCenter -> Permissions -> [Add] -> [Group Permission]
+Path:/sdn/zone/devpj/vnetpj01   # <--- ここが重要 vnetpj01は表示されないが指定可能
+Group:Pj01Admins
+Role:PVEAdmin
+
+## VPNユーザがProxmox dashboardにアクセス出来るようにする
+### Add Node level FW rules as below
+| ✓ | Chain | Action | Macro | Protocol | Source              | S.Port | Destination           | D.Port | Log   |
+|----|-------|--------|-------|----------|---------------------|--------|-----------------------|-------:|-------|
+| ✓ | in    | ACCEPT | -     | tcp      | +dc/vpn_guest_pool  | -      | +sdn/vnetpjXX-gateway | 8006   | nolog |
+
+XX:01 - NUM_PJ
+
+## 課題
+- quotaは与えられない。snapshot/backupも無限に取られてしまう。
+- 特定のVPNユーザのみにPVEダッシュボードのアクセス権を与えることは出来るか？
+→現状pritunlでユーザ個別にIPを指定できないので難しい。
+現状、特定ユーザにのみcredentialを伝えることによる、運用対処
+- 証跡記録→Proxmoxのlogで確認可能
+- VM削除後、エラーメッセージが出力されることがある。が、運用上問題なし。Proxmox forumで報告済み。
+Permission check failed (/vms/101, VM.Audit) (403)
+https://forum.proxmox.com/threads/pve-9-0-11-pool-based-rbac-%E2%80%93-gui-shows-permission-check-failed-vms-101-vm-audit-after-successful-vm-delete.178222/
+
+## D2D Operation
+### pj01adminがVM作成時
+VMID:空いているVMIDが自動で割り当てられるが、PJ単位でVMIDのプールを作ることが出来ない。
+→あとで管理しずらいので、ノード管理者からの指示が必要
+VM NAME:これもVMID同様、制御不可。ルールベースでノード管理者からの指示が必要。pj01を先頭に付けることなど
+CPU:リソース制限できない
+MEM:リソース制限できない
+NIC:暫定解決策ではNICの所属先vnetは自動的にvnetpj01になる
+ディスク:上記でほとんどのstorageを割り当てているので、iso置き場、vm-disk置き場には困らないが、
+ある程度どこに何を置くべきか、ノード管理者からの指示が必要
+
+### VMインストール時
+vnetpj01で使用可能なIPアドレス帯、GW、DNSサーバをあらかじめ教えておく必要がある

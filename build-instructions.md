@@ -175,7 +175,16 @@ route 172.16.16.0/20 via 192.168.77.2
 Datacenter → SDN → Zones → Add → Simple
 
 - ID: **vpndmz** (for VPN ingress)
-- ID: **devpj** (for project LANs)
+- ID: **devpj01** (for project01 LANs)
+- ID: **devpj02** (for project02 LANs)
+- ID: **devpj03** (for project03 LANs)
+- ID: **devpj04** (for project04 LANs)
+- ID: **devpj05** (for project05 LANs)
+- ID: **devpj06** (for project06 LANs)
+- ID: **devpj07** (for project07 LANs)
+- ID: **devpj08** (for project08 LANs)
+
+> Modified in v1.1 to separate zone for each project. It is better if you use pool base ACL.
 
 ---
 
@@ -197,22 +206,26 @@ Datacenter → SDN → VNets → Create
 
 ---
 
-### Development LAN VNets
-
+### Create Development LAN VNets
+#### Create Vnet
 Datacenter → SDN → VNets → Create
+See table below for VNet and Zone
+#### Add Subnet
+Datacenter → SDN → VNets → <click vnet> → Subnets → Create 
+See table below for VNet, Subnet and GW
 
-Zone: **devpj**
+| VNet     | Zone    | Subnet         | GW |
+|----------|---------|----------------|---------------|
+| vnetpj01 | devpj01 | 172.16.16.0/24 | 172.16.16.254 |
+| vnetpj02 | devpj02 | 172.16.17.0/24 | 172.16.17.254 |
+| vnetpj03 | devpj03 | 172.16.18.0/24 | 172.16.18.254 |
+| vnetpj04 | devpj04 | 172.16.19.0/24 | 172.16.19.254 |
+| vnetpj05 | devpj05 | 172.16.20.0/24 | 172.16.20.254 |
+| vnetpj06 | devpj06 | 172.16.21.0/24 | 172.16.21.254 |
+| vnetpj07 | devpj07 | 172.16.22.0/24 | 172.16.22.254 |
+| vnetpj08 | devpj08 | 172.16.23.0/24 | 172.16.23.254 |
 
-| VNet | Subnet | GW |
-|-------|--------------|-------------|
-| vnetpj01 | 172.16.16.0/24 | 172.16.16.254 |
-| vnetpj02 | 172.16.17.0/24 | 172.16.17.254 |
-| vnetpj03 | 172.16.18.0/24 | 172.16.18.254 |
-| vnetpj04 | 172.16.19.0/24 | 172.16.19.254 |
-| vnetpj05 | 172.16.20.0/24 | 172.16.20.254 |
-| vnetpj06 | 172.16.21.0/24 | 172.16.21.254 |
-| vnetpj07 | 172.16.22.0/24 | 172.16.22.254 |
-| vnetpj08 | 172.16.23.0/24 | 172.16.23.254 |
+> Modified in v1.1 to separate zone for each project. It is better if you use pool base ACL.
 
 ---
 
@@ -893,4 +906,194 @@ Assign only **UserAA + UserBA** to Server01.
 - Or both
 
 This is why PJ-based Orgs are strongly recommended.
+
+---
+
+# Goal of v1.1.0
+
+The following procedure grants VPN users access to the Proxmox dashboard and enables them to manage VMs.  
+If you do not want VPN users to manage VMs, skip this section.
+
+> Note: This requires a slight change in how zones are created. If you only created a single `devpj` zone, you should create separate `devpjXX` zones for each project.
+
+## Objective
+
+After completing these steps, a user like `pj01-admin@pve` will be able to:
+
+- Log in to the Proxmox dashboard
+- See only PJ01 VMs
+- Start, stop, access console, change settings, manage snapshots, and perform backups on PJ01 VMs only
+- Create and delete VMs within PJ01
+- Cannot access other projects' VMs, storage, or node settings
+
+---
+
+# Enable VPN Users to Create VMs in PJ01
+
+## Create Group, Pool, and User
+
+### Create Pool
+
+Navigate to:  
+**Datacenter → Permissions → Pool → [Create]**
+
+- Name: `pj01`
+
+> Each project must have its own pool. If you create a pool for all development projects, users will be able to access all PJxx resources.
+
+---
+
+### Create Group
+
+Navigate to:  
+**Datacenter → Permissions → Groups → [Create]**
+
+- Name: `Pj01Admins`
+
+---
+
+### Create User
+
+Navigate to:  
+**Datacenter → Permissions → Users → [Create]**
+
+- UserName: `pj01Admin`
+- Realm: `Proxmox VE authentication server`
+- Group: `Pj01Admins`
+
+---
+
+## Grant Permissions and Roles to the Group
+
+Navigate to:  
+**Datacenter → Permissions → [Add]**
+
+- Path: `/pool/pj01`
+- Group: `Pj01Admins`
+- Role: `PVEAdmins`
+
+> This conceptually assigns the group and role to the pool.
+
+---
+
+## Add Resources to the Pool
+
+### Add Resources to the Pool (PJ01)
+
+Without this step, users will not be able to create VMs.
+
+---
+
+#### Assign Existing VMs
+
+Navigate to:  
+**DataCenter → pj01 → Members → [Add] → Virtual Machine**
+
+> Skip if there are no existing VMs.
+
+---
+
+#### Assign Storage
+
+Navigate to:  
+**DataCenter → pj01 → Members → [Add] → Storage**
+
+> If storage is not assigned, `pj01admin` will not see any storage when creating a VM, preventing VM creation.  
+> You must assign storage for VM disks, ISO images, and local EFI storage.
+
+---
+
+#### Assign SDN Zone Network
+
+Navigate to:  
+**DataCenter → PVE(node) → devpjXX → [Permissions] → [Add] → [Group Permission]**
+
+- Group: `Pj01Admins`
+- Role: `PVEAdmin`
+
+> Without this, users cannot assign a bridge to the VM NIC during creation.
+
+**Important:**  
+Permissions can only be assigned at the SDN Zone level.
+
+If the existing zone is a single `devpj` (containing all `vnetpjXX` networks), assigning it would allow users to create VMs on other projects' networks.
+
+It would also allow them to delete or add VNets from other projects.
+
+→ This is why zone-based logical boundaries are necessary.  
+→ **Zones must be created per-project** (MSL Setup v1.1 improvement). The procedure has been updated.
+
+---
+
+##### [Workaround] If You Only Created One `devpj` Zone
+
+You can still assign permissions to individual VNets (though VPN users will not be able to create new VNets):
+
+Navigate to:  
+**DataCenter → Permissions → [Add] → [Group Permission]**
+
+- Path: `/sdn/zone/devpj/vnetpj01`  ← Important: `vnetpj01` is not displayed but can be specified
+- Group: `Pj01Admins`
+- Role: `PVEAdmin`
+
+---
+
+## Allow VPN Users to Access Proxmox Dashboard
+
+### Add Node-Level Firewall Rules
+
+Add the following rules at the node level:
+
+| ✓ | Chain | Action | Macro | Protocol | Source              | S.Port | Destination           | D.Port | Log   |
+|----|-------|--------|-------|----------|---------------------|--------|-----------------------|-------:|-------|
+| ✓ | in    | ACCEPT | -     | tcp      | +dc/vpn_guest_pool  | -      | +sdn/vnetpjXX-gateway | 8006   | nolog |
+
+Replace `XX` with `01` through `NUM_PJ`.
+
+---
+
+## Known Issues
+
+- **Quotas cannot be set.** Snapshots and backups can be created without limits.
+- **Per-user Proxmox dashboard access control is difficult.**  
+  → Pritunl does not allow per-user IP assignment.  
+  → Workaround: Only share credentials with specific users (operational control).
+- **Audit trails** → Available through Proxmox logs.
+- **Error message after VM deletion:**  
+  `Permission check failed (/vms/101, VM.Audit) (403)`  
+  → This is harmless. Reported on Proxmox forum:  
+  [https://forum.proxmox.com/threads/pve-9-0-11-pool-based-rbac-%E2%80%93-gui-shows-permission-check-failed-vms-101-vm-audit-after-successful-vm-delete.178222/](https://forum.proxmox.com/threads/pve-9-0-11-pool-based-rbac-%E2%80%93-gui-shows-permission-check-failed-vms-101-vm-audit-after-successful-vm-delete.178222/)
+
+---
+
+## Day-to-Day Operations
+
+### When `pj01admin` Creates a VM
+
+- **VMID:**  
+  An available VMID is automatically assigned, but there is no way to create per-project VMID pools.  
+  → Node administrators must provide guidance to avoid management issues later.
+
+- **VM Name:**  
+  Cannot be restricted. Node administrators should instruct users to follow naming conventions (e.g., prefix with `pj01`).
+
+- **CPU / Memory:**  
+  Cannot be limited.
+
+- **NIC:**  
+  With the workaround, the NIC will be automatically assigned to `vnetpj01`.
+
+- **Disk:**  
+  Most storage is assigned, so ISO and VM disk storage should be available.  
+  Node administrators should provide guidance on where to place different resources.
+
+---
+
+### During VM Installation
+
+VPN users must be informed in advance of the following for `vnetpj01`:
+
+- Available IP address range
+- Gateway
+- DNS server
 
