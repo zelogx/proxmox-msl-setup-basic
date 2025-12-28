@@ -1051,6 +1051,45 @@ Add the following rules at the node level:
 Replace `XX` with `01` through `NUM_PJ`.
 
 ---
+## Important security note: Always enable MFA for new users
+
+In the 2025 ransomware incident at ASKUL, attackers reportedly used stolen
+VPN credentials from a contractor to access the corporate network, then
+disabled endpoint protection (EDR), moved laterally between servers,
+encrypted systems, and deleted backups. This shows that even if your
+servers are hardened, once a client PC is compromised and plain-text
+credentials are stolen, VPN and admin accounts can be abused to take
+over the entire environment.
+
+Proxmox has built-in support for multi-factor authentication (MFA).
+For example, if you want to use Google Authenticator, you can configure it as follows:
+
+- Go to: **Proxmox → Datacenter → Permissions → Two Factor → [Add] → TOTP**
+- Select the user you want to enable MFA for; a QR code and SECRET will be displayed.
+- On your smartphone, open **Google Authenticator** and scan the QR code or type the SECRET.
+- Enter the 6-digit code shown in Google Authenticator into the Proxmox dialog and click **[Add]**.
+
+Pritunl also has built-in support for multi-factor authentication (MFA):
+
+- Go to: **Pritunl → Servers → [Select server] → [Stop]**
+- Then: **Pritunl → Servers → [Select server] → [Settings]**
+- Check **“Enable Google Authenticator”** and click **[Save]**.
+- Start the server again: **Pritunl → Servers → [Select server] → [Start]**.
+- Go to: **Pritunl → Users → [Select user]**, then click the **QR-code icon**.
+- Provide the client with the VPN profile and the QR code (or TOTP secret) securely.
+
+With MFA enabled, stolen IDs and passwords alone are no longer enough
+to log in. When you onboard a new user, treat MFA as *mandatory*, not
+optional.
+
+> Note  
+> The Proxmox and Pritunl MFA settings described here do **not** provide
+> perfect protection against ransomware. If a client PC is fully compromised,
+> even a combination of VDI, EDR, DLP, UTM and other layered defenses cannot
+> realistically reduce the risk to zero.  
+> However, enabling MFA as described above can help reduce the blast radius
+> of an incident and make it significantly harder for attackers to perform
+> unauthorized logins and lateral movement.
 
 ## Known Issues
 
