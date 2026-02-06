@@ -1,13 +1,24 @@
 # Multiverse Secure Lab(MSL) Setup for Proxmox by Zelogx™
 
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717?logo=github)](https://github.com/zelogx/msl-setup/discussions)
+[![Ofiicial Site](https://img.shields.io/badge/オフィシャル-サイト-blue)](https://www.zelogx.com/ja/)
+[![Release Notes](https://img.shields.io/badge/リリース-ノート-green)](https://www.zelogx.com/ja/documents/release-notes/)
+
+Zelogx™ MSL Setupは、Proxmox SDN、PVE-Firewall、Pritunlを活用し、L2レベルで完全隔離されたセキュアな開発環境をProxmox上に構築するためのオープンソース・リファレンスです。
+
+公式サイト: https://www.zelogx.com/
+
+⚠️ **このリポジトリは、Zelogx™ MSL Setup の「初期バージョン（手動構築手順）」を保存するためのアーカイブです。**<BR>
+この設計が役立つと思ったら、ぜひ ⭐ (Star) や “Watch” をお願いします。
+
+> **2026年1月25日、完全自動化された最新版「MSL Setup Personal (Free)」がリリースされました。**<BR>
+> **[https://github.com/zelogx/msl-setup](https://github.com/zelogx/msl-setup)**<BR>
+> 気に入っていただけたら、ぜひ ⭐ を落としていってください。
+
 Hola! Enjoying your self-hosted stack?
 Why not offer a secure slice of it to your team?
 Refer to REAMME_en.md for English documents.
 > [English version is here (README.md)](./README.md)
-
-Official website: https://www.zelogx.com/
-> MSL Setup Pro v1.0.0（Personal License）は 2025-12-19 にリリースされました。
-
 
 # パブリッククラウド開発環境からの脱却
 

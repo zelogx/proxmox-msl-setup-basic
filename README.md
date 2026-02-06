@@ -1,5 +1,9 @@
 # Multiverse Secure Lab(MSL) Setup for Proxmox by Zelogx™
 
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717?logo=github)](https://github.com/zelogx/msl-setup/discussions)
+[![Ofiicial Site](https://img.shields.io/badge/Official-Site-blue)](https://www.zelogx.com)
+[![Release Notes](https://img.shields.io/badge/Release-notes-green)](https://www.zelogx.com/documents/release-notes/)
+
 Zelogx™ Multi-Project Secure Lab Setup is an open-source provisioning toolkit for building secure, L2 isolated development environments on proxmox utilizing Proxmox SDN, PVE-Firewall rules and Pritunl.
 
 © 2025 Zelogx. Zelogx™ and the Zelogx logo are trademarks of the Zelogx Project. All other marks are property of their respective owners.
@@ -7,16 +11,19 @@ Zelogx™ Multi-Project Secure Lab Setup is an open-source provisioning toolkit 
 > [日本語版はこちら (README_jp.md)](./README_jp.md)
 
 Official website: https://www.zelogx.com/
-> MSL Setup Pro v1.0.0 (Personal License) was released on 2025-12-19.
+
+⚠️ This repository is an archive to preserve the "initial version (manual build instructions)" of Zelogx™ MSL Setup.<BR>
+If this looks useful, ⭐ or “Watch” this repo.
+> **MSL Setup Personal (Free) a fully automated version was released on Jan. 25th 2026**<BR>
+> **[https://github.com/zelogx/msl-setup](https://github.com/zelogx/msl-setup)**<BR>
+> Drop ⭐ if you like it.
 
 ## 1. Overview
 
 This project builds **completely isolated development environments per project** by Layer 2 level, accessible securely via VPN.\
 It's a blueprint for **low-cost distributed development**, offshore projects, or private team labs.
 
-> If this looks useful but too much work to run manually,
-I’m building MSL Setup Pro: a fully automated version.
-⭐ or “Watch” this repo if you want to hear when it’s ready.
+
 
 ### 1.1. Clarification for Readers
 
