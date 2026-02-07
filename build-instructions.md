@@ -1,13 +1,109 @@
-# Network Diagram
+# Multiverse Secure Lab(MSL) Setup for Proxmox by Zelogx™ - The Multi-tenant Enabler Step by step building guide
+
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717?logo=github)](https://github.com/zelogx/msl-setup/discussions)
+[![Ofiicial Site](https://img.shields.io/badge/Official-Site-blue)](https://www.zelogx.com)
+[![Release Notes](https://img.shields.io/badge/Release-notes-green)](https://www.zelogx.com/documents/release-notes/)
+
+## Table of Contents
+
+- [I. Network Diagram](#network-diagram)
+- [II. Requirements: Proxmox Installation](#requirements-proxmox-installation)
+- [III. Network Design and Segmentation](#network-design-and-segmentation)
+    - [a. MainLAN (vmbr0 existing): 192.168.77.0/24, GW: .254](#a-mainlan-vmbr0-existing-19216877024-gw-254)
+    - [b. Proxmox PVE mainlan IP](#b-proxmox-pve-mainlan-ip)
+    - [c. vpndmzvn (new): 192.168.80.0/24, GW: 192.168.80.1](#c-vpndmzvn-new-19216880024-gw-192168801)
+    - [d. IP range for VPN clients: 192.168.81.0/24](#d-ip-range-for-vpn-clients-19216881024)
+    - [List of IP address range and number of clients per PJ (OpenVPN)](#list-of-ip-address-range-and-number-of-clients-per-pj-openvpn)
+    - [List of IP address range and number of clients per PJ (WireGuard)](#list-of-ip-address-range-and-number-of-clients-per-pj-wireguard)
+    - [e. Number of project segments (PJs)](#e-number-of-project-segments-pjs)
+    - [f. Project network ranges (new): 172.16.16.0/20](#f-project-network-ranges-new-1721616020)
+    - [g. Pritunl mainlan-side IP](#g-pritunl-mainlan-side-ip)
+    - [h. Pritunl vpndmzvn-side IP](#h-pritunl-vpndmzvn-side-ip)
+    - [i. UDP Port Numbers for OpenVPN and WireGuard](#i-udp-port-numbers-for-openvpn-and-wireguard)
+    - [Static routes (Home Router)](#static-routes-home-router)
+- [1. Adding Proxmox SDN Bridges](#adding-proxmox-sdn-bridges)
+  - [1.1. Create SDN Zones](#create-sdn-zones)
+  - [1.2. Create VNets (Virtual Layer-2 Segments)](#create-vnets-virtual-layer-2-segments)
+    - [1.2.1. DMZ VNet (vpn-dmz-vnet)](#dmz-vnet-vpn-dmz-vnet)
+    - [1.2.2. Create Development LAN VNets](#create-development-lan-vnets)
+      - [1.2.2.1. Create Vnet](#create-vnet)
+      - [1.2.2.2. Add Subnet](#add-subnet)
+    - [1.3. Apply SDN Configuration](#apply-sdn-configuration)
+- [2. Datacenter Firewall Configuration](#datacenter-firewall-configuration)
+    - [2.1. Enable Datacenter-Level Firewall](#enable-datacenter-level-firewall)
+- [3. Blocking Access from Development LAN Gateways to Proxmox](#blocking-access-from-development-lan-gateways-to-proxmox)
+- [4. Placing the Pritunl VM on vpndmzvn](#placing-the-pritunl-vm-on-vpndmzvn)
+- [5. Install Ubuntu 24.04 (Minimal)](#install-ubuntu-2404-minimal)
+- [6. Install Pritunl and Dependencies](#install-pritunl-and-dependencies)
+- [7. Increase File Descriptor Limits](#increase-file-descriptor-limits)
+- [8. Bind MongoDB to Localhost](#bind-mongodb-to-localhost)
+- [9. Check Pritunl Ports](#check-pritunl-ports)
+- [10. Get Setup Key](#get-setup-key)
+- [11. Access the Web UI](#access-the-web-ui)
+- [12. Get Default Admin Password](#get-default-admin-password)
+- [13. Pritunl GUI Setup](#pritunl-gui-setup)
+  - [13.1. Create Organization](#create-organization)
+  - [13.2. Add User](#add-user)
+  - [13.3. Create Server](#create-server)
+    - [Advanced Settings](#advanced-settings)
+  - [13.4. Port Table](#port-table)
+  - [13.5. Virtual Network List (OpenVPN)](#virtual-network-list-openvpn)
+  - [13.6. Virtual Network List (WireGuard)](#virtual-network-list-wireguard)
+- [14. Development LAN VNets](#development-lan-vnets)
+- [15. Server Routes](#server-routes)
+- [16. Create Organization and Attach to Server](#create-organization-and-attach-to-server)
+- [17. Change Pritunl GUI Listen Address](#change-pritunl-gui-listen-address)
+- [18. Prevent SSH Access From 192.168.80.1 to Pritunl Host](#prevent-ssh-access-from-192168801-to-pritunl-host)
+- [19. Ensure No Processes Listen on 0.0.0.0](#ensure-no-processes-listen-on-0000)
+- [20. When PJ VMs Cannot Ping the Gateway (172.16.1X.254)](#when-pj-vms-cannot-ping-the-gateway-172161x254)
+- [21. Connectivity Test (3 Steps)](#connectivity-test-3-steps)
+- [22. Development VMs Must Have Firewall + Security Group Enabled](#development-vms-must-have-firewall--security-group-enabled)
+- [23. When Client Config Uses Local Address Instead of Public IP](#when-client-config-uses-local-address-instead-of-public-ip)
+- [24. Prevent VPN Clients From Using Pritunl for DNS](#prevent-vpn-clients-from-using-pritunl-for-dns)
+- [25. Disable NAT and Use Pure Routing (Per-Server)](#disable-nat-and-use-pure-routing-per-server)
+  - [25.1. Get SID (Server ID)](#1-get-sid-server-id)
+  - [25.2. Check NAT Status](#2-check-nat-status)
+  - [25.3. Disable NAT for All Servers](#3-disable-nat-for-all-servers)
+- [26. Check iptables NAT Rules](#check-iptables-nat-rules)
+- [27. Return Route for VPN Client Pool](#return-route-for-vpn-client-pool)
+- [28. Reduce CPU Usage When Idle](#reduce-cpu-usage-when-idle)
+- [29. Pritunl Organizations](#pritunl-organizations)
+- [30. One-to-One Mapping for This Setup](#one-to-one-mapping-for-this-setup)
+- [31. Example Organization–User Mapping](#example-organizationuser-mapping)
+    - [Not possible](#not-possible)
+    - [Possible](#possible)
+- [iV. Enabling Selfcare portal](#goal-of-v110)
+  - [Objective](#objective)
+- [1. Enable VPN Users to Create VMs in PJ01](#enable-vpn-users-to-create-vms-in-pj01)
+  - [1.1. Create Group, Pool, and User](#create-group-pool-and-user)
+    - [1.1.1. Create Pool](#create-pool)
+    - [1.1.2. Create Group](#create-group)
+    - [1.1.3. Create User](#create-user)
+  - [1.2. Grant Permissions and Roles to the Group](#grant-permissions-and-roles-to-the-group)
+  - [1.3. Add Resources to the Pool](#add-resources-to-the-pool)
+    - [1.3.1. Add Resources to the Pool (PJ01)](#add-resources-to-the-pool-pj01)
+      - [1.3.1.1. Assign Existing VMs](#assign-existing-vms)
+      - [1.3.1.2. Assign Storage](#assign-storage)
+      - [1.3.1.3. Assign SDN Zone Network](#assign-sdn-zone-network)
+        - [[Workaround] If You Only Created One `devpj` Zone](#workaround-if-you-only-created-one-devpj-zone)
+  - [1.4. Allow VPN Users to Access Proxmox Dashboard](#allow-vpn-users-to-access-proxmox-dashboard)
+    - [1.4.1. Add Node-Level Firewall Rules](#add-node-level-firewall-rules)
+  - [1.5. Important security note: Always enable MFA for new users](#important-security-note-always-enable-mfa-for-new-users)
+  - [1.6. Known Issues](#known-issues)
+  - [1.7. Day-to-Day Operations](#day-to-day-operations)
+    - [1.7.1. When `pj01admin` Creates a VM](#when-pj01admin-creates-a-vm)
+    - [1.7.2. During VM Installation](#during-vm-installation)
+
+## Network Diagram
 
 docs/assets/zelog-MSL-Setup-withID.svg
 
-# Requirements: Proxmox Installation
+## Requirements: Proxmox Installation
 
 - The system must be updated to PVE 9.0.11.
 - It is recommended (but not mandatory) to disable the Enterprise repository and enable the No-subscription repositories (ceph.sources and proxmox.sources).
 
-# Network Design and Segmentation
+## Network Design and Segmentation
 
 The following network design does not have to be implemented exactly as written.  
 It is fine as long as you can guarantee that the IP ranges you choose do not overlap with existing ones.
