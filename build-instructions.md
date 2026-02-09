@@ -96,7 +96,7 @@
 
 ## Network Diagram
 
-docs/assets/zelog-MSL-Setup-withID.svg
+![Network_diagram](./docs/assets/zelogx-MSL-Setup-withID.svg)
 
 ## Requirements: Proxmox Installation
 
@@ -1005,7 +1005,7 @@ This is why PJ-based Orgs are strongly recommended.
 
 ---
 
-# Goal of v1.1.0
+# Selfcare-portal
 
 The following procedure grants VPN users access to the Proxmox dashboard and enables them to manage VMs.  
 If you do not want VPN users to manage VMs, skip this section.
@@ -1023,23 +1023,22 @@ After completing these steps, a user like `pj01-admin@pve` will be able to:
 - Cannot access other projects' VMs, storage, or node settings
 
 ---
+## Step-by-step procedure
+Enable VPN Users to Create VMs in PJ01
 
-# Enable VPN Users to Create VMs in PJ01
+### Create Pool, Group and User
 
-## Create Group, Pool, and User
-
-### Create Pool
+#### Create Pool
 
 Navigate to:  
 **Datacenter → Permissions → Pool → [Create]**
 
 - Name: `pj01`
-
 > Each project must have its own pool. If you create a pool for all development projects, users will be able to access all PJxx resources.
 
 ---
 
-### Create Group
+#### Create Group
 
 Navigate to:  
 **Datacenter → Permissions → Groups → [Create]**
@@ -1048,7 +1047,7 @@ Navigate to:
 
 ---
 
-### Create User
+#### Create User
 
 Navigate to:  
 **Datacenter → Permissions → Users → [Create]**
@@ -1059,7 +1058,7 @@ Navigate to:
 
 ---
 
-## Grant Permissions and Roles to the Group
+### Grant Permissions and Roles to the Group
 
 Navigate to:  
 **Datacenter → Permissions → [Add]**
@@ -1078,16 +1077,12 @@ Navigate to:
 
 Without this step, users will not be able to create VMs.
 
----
-
 #### Assign Existing VMs
 
 Navigate to:  
 **DataCenter → pj01 → Members → [Add] → Virtual Machine**
 
 > Skip if there are no existing VMs.
-
----
 
 #### Assign Storage
 
@@ -1096,8 +1091,6 @@ Navigate to:
 
 > If storage is not assigned, `pj01admin` will not see any storage when creating a VM, preventing VM creation.  
 > You must assign storage for VM disks, ISO images, and local EFI storage.
-
----
 
 #### Assign SDN Zone Network
 
