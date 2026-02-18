@@ -1,4 +1,4 @@
-# MSL Setup Quota 機能（最小構成案）
+# MSL Setup: ProxmoxにQuota機能を追加する案（最小構成案）
 
 ## 1. 何に対して Quota を掛けるか（対象と前提）
 

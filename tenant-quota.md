@@ -1,4 +1,4 @@
-# [Design] Tenant-level CPU/MEM/disk quotas per pool using hookscripts
+# [Design] Proxmox Tenant-level CPU/MEM/disk quotas per pool using hookscripts
 
 This is a design note for adding **per-tenant resource quotas** to MSL Setup  
 by using Proxmox pools + a common hookscript.
