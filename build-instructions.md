@@ -6,154 +6,142 @@
 
 ## Table of Contents
 
-- [I. Network Diagram](#network-diagram)
-- [II. Requirements: Proxmox Installation](#requirements-proxmox-installation)
-- [III. Network Design and Segmentation](#network-design-and-segmentation)
-    - [a. MainLAN (vmbr0 existing): 192.168.77.0/24, GW: .254](#a-mainlan-vmbr0-existing-19216877024-gw-254)
-    - [b. Proxmox PVE mainlan IP](#b-proxmox-pve-mainlan-ip)
-    - [c. vpndmzvn (new): 192.168.80.0/24, GW: 192.168.80.1](#c-vpndmzvn-new-19216880024-gw-192168801)
-    - [d. IP range for VPN clients: 192.168.81.0/24](#d-ip-range-for-vpn-clients-19216881024)
-    - [List of IP address range and number of clients per PJ (OpenVPN)](#list-of-ip-address-range-and-number-of-clients-per-pj-openvpn)
-    - [List of IP address range and number of clients per PJ (WireGuard)](#list-of-ip-address-range-and-number-of-clients-per-pj-wireguard)
-    - [e. Number of project segments (PJs)](#e-number-of-project-segments-pjs)
-    - [f. Project network ranges (new): 172.16.16.0/20](#f-project-network-ranges-new-1721616020)
-    - [g. Pritunl mainlan-side IP](#g-pritunl-mainlan-side-ip)
-    - [h. Pritunl vpndmzvn-side IP](#h-pritunl-vpndmzvn-side-ip)
-    - [i. UDP Port Numbers for OpenVPN and WireGuard](#i-udp-port-numbers-for-openvpn-and-wireguard)
-    - [Static routes (Home Router)](#static-routes-home-router)
-- [1. Adding Proxmox SDN Bridges](#adding-proxmox-sdn-bridges)
-  - [1.1. Create SDN Zones](#create-sdn-zones)
-  - [1.2. Create VNets (Virtual Layer-2 Segments)](#create-vnets-virtual-layer-2-segments)
-    - [1.2.1. DMZ VNet (vpn-dmz-vnet)](#dmz-vnet-vpn-dmz-vnet)
-    - [1.2.2. Create Development LAN VNets](#create-development-lan-vnets)
-      - [1.2.2.1. Create Vnet](#create-vnet)
-      - [1.2.2.2. Add Subnet](#add-subnet)
-    - [1.3. Apply SDN Configuration](#apply-sdn-configuration)
-- [2. Datacenter Firewall Configuration](#datacenter-firewall-configuration)
-    - [2.1. Enable Datacenter-Level Firewall](#enable-datacenter-level-firewall)
-- [3. Blocking Access from Development LAN Gateways to Proxmox](#blocking-access-from-development-lan-gateways-to-proxmox)
-- [4. Placing the Pritunl VM on vpndmzvn](#placing-the-pritunl-vm-on-vpndmzvn)
-- [5. Install Ubuntu 24.04 (Minimal)](#install-ubuntu-2404-minimal)
-- [6. Install Pritunl and Dependencies](#install-pritunl-and-dependencies)
-- [7. Increase File Descriptor Limits](#increase-file-descriptor-limits)
-- [8. Bind MongoDB to Localhost](#bind-mongodb-to-localhost)
-- [9. Check Pritunl Ports](#check-pritunl-ports)
-- [10. Get Setup Key](#get-setup-key)
-- [11. Access the Web UI](#access-the-web-ui)
-- [12. Get Default Admin Password](#get-default-admin-password)
-- [13. Pritunl GUI Setup](#pritunl-gui-setup)
-  - [13.1. Create Organization](#create-organization)
-  - [13.2. Add User](#add-user)
-  - [13.3. Create Server](#create-server)
-    - [Advanced Settings](#advanced-settings)
-  - [13.4. Port Table](#port-table)
-  - [13.5. Virtual Network List (OpenVPN)](#virtual-network-list-openvpn)
-  - [13.6. Virtual Network List (WireGuard)](#virtual-network-list-wireguard)
-- [14. Development LAN VNets](#development-lan-vnets)
-- [15. Server Routes](#server-routes)
-- [16. Create Organization and Attach to Server](#create-organization-and-attach-to-server)
-- [17. Change Pritunl GUI Listen Address](#change-pritunl-gui-listen-address)
-- [18. Prevent SSH Access From 192.168.80.1 to Pritunl Host](#prevent-ssh-access-from-192168801-to-pritunl-host)
-- [19. Ensure No Processes Listen on 0.0.0.0](#ensure-no-processes-listen-on-0000)
-- [20. When PJ VMs Cannot Ping the Gateway (172.16.1X.254)](#when-pj-vms-cannot-ping-the-gateway-172161x254)
-- [21. Connectivity Test (3 Steps)](#connectivity-test-3-steps)
-- [22. Development VMs Must Have Firewall + Security Group Enabled](#development-vms-must-have-firewall--security-group-enabled)
-- [23. When Client Config Uses Local Address Instead of Public IP](#when-client-config-uses-local-address-instead-of-public-ip)
-- [24. Prevent VPN Clients From Using Pritunl for DNS](#prevent-vpn-clients-from-using-pritunl-for-dns)
-- [25. Disable NAT and Use Pure Routing (Per-Server)](#disable-nat-and-use-pure-routing-per-server)
-  - [25.1. Get SID (Server ID)](#1-get-sid-server-id)
-  - [25.2. Check NAT Status](#2-check-nat-status)
-  - [25.3. Disable NAT for All Servers](#3-disable-nat-for-all-servers)
-- [26. Check iptables NAT Rules](#check-iptables-nat-rules)
-- [27. Return Route for VPN Client Pool](#return-route-for-vpn-client-pool)
-- [28. Reduce CPU Usage When Idle](#reduce-cpu-usage-when-idle)
-- [29. Pritunl Organizations](#pritunl-organizations)
-- [30. One-to-One Mapping for This Setup](#one-to-one-mapping-for-this-setup)
-- [31. Example Organization–User Mapping](#example-organizationuser-mapping)
-    - [Not possible](#not-possible)
-    - [Possible](#possible)
-- [iV. Enabling Selfcare portal](#goal-of-v110)
-  - [Objective](#objective)
-- [1. Enable VPN Users to Create VMs in PJ01](#enable-vpn-users-to-create-vms-in-pj01)
-  - [1.1. Create Group, Pool, and User](#create-group-pool-and-user)
-    - [1.1.1. Create Pool](#create-pool)
-    - [1.1.2. Create Group](#create-group)
-    - [1.1.3. Create User](#create-user)
-  - [1.2. Grant Permissions and Roles to the Group](#grant-permissions-and-roles-to-the-group)
-  - [1.3. Add Resources to the Pool](#add-resources-to-the-pool)
-    - [1.3.1. Add Resources to the Pool (PJ01)](#add-resources-to-the-pool-pj01)
-      - [1.3.1.1. Assign Existing VMs](#assign-existing-vms)
-      - [1.3.1.2. Assign Storage](#assign-storage)
-      - [1.3.1.3. Assign SDN Zone Network](#assign-sdn-zone-network)
-        - [[Workaround] If You Only Created One `devpj` Zone](#workaround-if-you-only-created-one-devpj-zone)
-  - [1.4. Allow VPN Users to Access Proxmox Dashboard](#allow-vpn-users-to-access-proxmox-dashboard)
-    - [1.4.1. Add Node-Level Firewall Rules](#add-node-level-firewall-rules)
-  - [1.5. Important security note: Always enable MFA for new users](#important-security-note-always-enable-mfa-for-new-users)
-  - [1.6. Known Issues](#known-issues)
-  - [1.7. Day-to-Day Operations](#day-to-day-operations)
-    - [1.7.1. When `pj01admin` Creates a VM](#when-pj01admin-creates-a-vm)
-    - [1.7.2. During VM Installation](#during-vm-installation)
+- [Requirements](#requirements)
+- [Overview](#overview)
+- [Network Topology Diagram](#network-topology-diagram)
+- [Network Design / Segment Design](#network-design--segment-design)
+  - [a. MainLAN (existing vmbr0): 192.168.77.0/24](#a-mainlan-existing-vmbr0-19216877024)
+  - [b. Proxmox PVE MainLAN IP: 192.168.77.2](#b-proxmox-pve-mainlan-ip-19216877-2)
+  - [c. vpndmzvn (new): 192.168.80.0/24](#c-vpndmzvn-new-19216880024)
+  - [d. IP range distributed to VPN clients: 192.168.81.0/24](#d-ip-range-distributed-to-vpn-clients-19216881024)
+  - [List of IP address range and number of clients per PJ (OpenVPN)](#list-of-ip-address-range-and-number-of-clients-per-pj-openvpn)
+  - [List of IP address range and number of clients per PJ (WireGuard)](#list-of-ip-address-range-and-number-of-clients-per-pj-wireguard)
+  - [e. Number of isolated development segments (number of projects): 8](#e-number-of-isolated-development-segments-number-of-projects-8)
+  - [f. Network address assigned to each project: 172.16.16.0/20](#f-network-address-assigned-to-each-project-1721616020)
+  - [g. Pritunl mainlan-side IP](#g-pritunl-mainlan-side-ip)
+  - [h. Pritunl vpndmzvn-side IP](#h-pritunl-vpndmzvn-side-ip)
+  - [i. UDP Port Numbers for OpenVPN and WireGuard](#i-udp-port-numbers-for-openvpn-and-wireguard)
+- [Main Router Configuration Changes](#main-router-configuration-changes)
+  - [Configure port forwarding](#configure-port-forwarding-for-openvpn-and-wireguard--number-of-projects)
+  - [Static Route](#static-route)
+- [Proxmox SDN Configuration](#proxmox-sdn-configuration)
+  - [Create SDN Zones](#create-sdn-zones)
+  - [Create VNets (Virtual Layer-2 Segments)](#create-vnets-virtual-layer-2-segments)
+    - [DMZ VNet (vpn-dmz-vnet)](#dmz-vnet-vpn-dmz-vnet)
+    - [Create Development (Tenant) LAN VNets](#create-development-tenant-lan-vnets)
+    - [Apply SDN Configuration](#apply-sdn-configuration)
+  - [Create IPSet](#create-ipset)
+- [Proxmox Firewall Configuration](#proxmox-firewall-configuration)
+- [Blocking Access from Development LAN Gateways to Proxmox](#blocking-access-from-development-lan-gateways-to-proxmox)
+- [Create the Pritunl VM](#create-the-pritunl-vm)
+  - [Install Ubuntu 24.04 (Minimal)](#install-ubuntu-2404-minimal)
+- [Install Pritunl and Dependencies](#install-pritunl-and-dependencies)
+  - [Get Setup Key](#get-setup-key)
+  - [Access the Web UI](#access-the-web-ui)
+  - [Get Default Admin Password](#get-default-admin-password)
+  - [Pritunl GUI Setup](#pritunl-gui-setup)
+    - [Login to the Web UI](#login-to-the-web-ui)
+    - [Create Organization](#create-organization)
+    - [Add User](#add-user)
+    - [Create Server](#create-server)
+    - [Port Table](#port-table)
+    - [Create Org & Attach to Server](#create-org--attach-to-server)
+  - [Pritunl VM Hardening](#pritunl-vm-hardening)
+    - [Change the Pritunl GUI Listen Address](#change-the-pritunl-gui-listen-address)
+    - [Change sshd Listen Address](#change-sshd-listen-address-to-prevent-ssh-access-from-192168801)
+    - [Verify that No Process Is Listening on 0.0.0.0](#verify-that-no-process-is-listening-on-0000)
+    - [If PJVM Cannot Ping the Gateway](#if-pjvm-cannot-ping-the-gateway-172161x254)
+    - [Connectivity Test (3 Steps)](#connectivity-test-3-steps)
+    - [Enable Firewall and Apply Security Group for Development VMs](#enable-firewall-and-apply-security-group-for-development-vms)
+    - [The Client Configuration Shows a Local Address as the Connection Target](#the-client-configuration-shows-a-local-address-as-the-connection-target)
+    - [Clients Attempt to Resolve DNS Through the VPN](#clients-attempt-to-resolve-dns-through-the-vpn)
+    - [Disable NAT and Use Pure Routing](#disable-nat-and-use-pure-routing-for-the-specific-server)
+    - [Return Route for VPN Client Pool](#return-route-for-vpn-client-pool)
+  - [Additional configurations](#additional-configurations)
+    - [Reduce CPU Usage When Idle](#reduce-cpu-usage-when-idle)
+    - [Pritunl Organizations](#pritunl-organizations)
+    - [One-to-One Mapping for This Setup](#one-to-one-mapping-for-this-setup)
+    - [Example Organization–User Mapping](#example-organizationuser-mapping)
+- [Create a Self-Care Portal](#create-a-self-care-portal)
+  - [Create Group, Pool, and User](#create-group-pool-and-user)
+  - [Assign Permissions and Roles to the Group](#assign-permissions-and-roles-to-the-group)
+  - [Add Resources to the Pool](#add-resources-to-the-pool)
+  - [Allow VPN Users to Access the Proxmox Dashboard](#allow-vpn-users-to-access-the-proxmox-dashboard)
+  - [Important security note: Always enable MFA for new users](#important-security-note-always-enable-mfa-for-new-users)
+  - [Known Issues](#known-issues)
+  - [Day-to-Day Operations](#day-to-day-operations)
+    - [When `pj01admin` Creates a VM](#when-pj01admin-creates-a-vm)
+    - [During VM Installation](#during-vm-installation)
 
-## Network Diagram
+## Requirements
+- Proxmox must be installed.
+- The system must be updated to PVE 9.0.11.  
+  Operation on versions earlier than this version has not been verified.
 
-![Network_diagram](./docs/assets/zelogx-MSL-Setup-withID.svg)
+## Overview
+The following outlines the tasks that will be carried out.
 
-## Requirements: Proxmox Installation
+- Proxmox SDN configuration
+  - Create Proxmox SDN Simple Zones equal to the number of projects (tenants), plus an additional zone used as the routing path that allows VPN users to access the tenants.
+  - Create Proxmox SDN VNets (equivalent to bridges or network segments) inside the zones created above.
+  - Assign an IP address and gateway to each VNet. At this point, the creation of networks isolated per project (tenant) is complete.
+  - Configure firewall rules between each segment created above.
 
-- The system must be updated to PVE 9.0.11.
-- It is recommended (but not mandatory) to disable the Enterprise repository and enable the No-subscription repositories (ceph.sources and proxmox.sources).
+- Configure one static route on the router and set up port forwarding  
+  (number of projects × 2).
 
-## Network Design and Segmentation
+- Build the Pritunl VM
+  - Deploy the Pritunl VM and verify network connectivity. After confirming connectivity, create a Server in Pritunl for each project (tenant).
+  - Create Organizations in Pritunl and attach them to the corresponding project (tenant) Servers.
 
-The following network design does not have to be implemented exactly as written.  
-It is fine as long as you can guarantee that the IP ranges you choose do not overlap with existing ones.
+- Create a self-care portal.
 
----
+## Network Topology Diagram
+The network that will be created is shown below.
 
-### a. MainLAN (vmbr0 existing): 192.168.77.0/24, GW: .254
+The network addresses / CIDR values that must be determined are labeled **a–i** in the diagram.
 
-This is the home-lab / household network.  
-Examples of devices connected here:
+![Network Diagram](./docs/assets/zelogx-MSL-Setup-withID.svg)
 
-- CentOS Stream 10 server (192.168.77.1) hosting zelogx web server, Nextcloud, Samba  
-- Personal OpenVPN / WireGuard  
-- Unbound DNS  
-- Alexa devices, TV, PlayStation, home PCs, smartphones  
-- Internet router  
+## Network Design / Segment Design
 
-The “Pritunl mainlan-side IP” must exist within this network range.
-
-Most consumer routers only allow port-forwarding to LAN-side IPs →  
-Therefore, Pritunl should ideally be placed under the home LAN segment.
+It is sufficient to confirm that the network addresses / CIDR ranges defined below are **not already in use elsewhere**.
 
 ---
 
-### b. Proxmox PVE mainlan IP  
-192.168.77.2  
-This becomes the **static-route next-hop** when configuring the internet router.
+### a. MainLAN (existing vmbr0): 192.168.77.0/24  GW: .254
+→ Home lab and household network.  
+The main CentOS Stream 10 server (.1) runs the Zelogx web server, Nextcloud, Samba, personal OpenVPN/WireGuard, Unbound DNS, etc.  
+It also includes various home devices such as Alexa, TVs, PS5, the internet router, family PCs, smartphones, and more.
 
----
+The "Pritunl MainLAN-side IP" configured later **must be within this IP range**.
 
-### c. vpndmzvn (new): 192.168.80.0/24, GW: 192.168.80.1
+Many internet routers only support port forwarding to IP addresses within the LAN segment.  
+Therefore, it is preferable that this system is connected directly to the LAN under the internet router.
 
-This is the DMZ network that Pritunl uses to route VPN clients into each project VLAN.  
-A /30 network is technically sufficient, but here we allocate /24 for simplicity.
+### b. Proxmox PVE MainLAN IP: 192.168.77.2
+This IP address will be used as the **destination IP** when adding a static route on the internet router.
 
----
+### c. vpndmzvn (new): 192.168.80.0/24  GW: 192.168.80.1
+This network provides the routing path that allows VPN clients to access each development project subnet.
 
-### d. IP range for VPN clients: 192.168.81.0/24
+At minimum, a **/30 network** is required.
 
-You can split this range into OpenVPN and WireGuard blocks.  
+### d. IP range distributed to VPN clients: 192.168.81.0/24
+This IP range is assigned dynamically to VPN clients when they connect.
+
+This range is further divided between **WireGuard** and **OpenVPN**.
+
 Example:
 
-- 192.168.81.2–126 (/25) → OpenVPN
-- 192.168.81.129–254 (/25) → WireGuard
+- OpenVPN  : 192.168.81.002–126 /25  
+- WireGuard: 192.168.81.129–254 /25  
 
-This range is further divided into /28 blocks, one per project segment.
+This range is then further subdivided based on the **number of isolated development segments to be created**, resulting in **/28 networks**.
 
-Maximum clients per PJ = 13.
+Each project can therefore support **up to 13 VPN clients**.
 
-Suitable for offshore distributed development or multi-member teams.
+For offshore distributed development or larger teams, it may be preferable to allocate a larger range.
 
 ---
 
@@ -170,8 +158,6 @@ Suitable for offshore distributed development or multi-member teams.
 | 7   | 192.168.81.96/28 | 192.168.81.98–192.168.81.110 | 13 |
 | 8   | 192.168.81.112/28 | 192.168.81.114–192.168.81.126 | 13 |
 
----
-
 ### List of IP address range and number of clients per PJ (WireGuard)
 
 | PJ  | Subnet          | IP Range                     | # Clients |
@@ -185,18 +171,15 @@ Suitable for offshore distributed development or multi-member teams.
 | 7   | 192.168.81.224/28 | 192.168.81.226–192.168.81.238 | 13 |
 | 8   | 192.168.81.240/28 | 192.168.81.242–192.168.81.254 | 13 |
 
----
+### e. Number of isolated development segments (number of projects): 8  
+(Must be at least 2 and must be a power of two: 2, 4, 8, 16, etc.)
 
-### e. Number of project segments (PJs)
+### f. Network address assigned to each project (vnetpjxx) (new): 172.16.16.0/20 : Project segment
 
-8 PJs.  
-Must be a power of two (2, 4, 8, 16…).
+- This IP range will be divided according to the **number of isolated development segments to be created**.
 
----
-
-### f. Project network ranges (new): 172.16.16.0/20
-
-This block is divided into subnets for each PJ based on the total number of PJs.
+- Example:  
+  If the network address assigned to vnetpjxx is **172.16.16.0/20** and the number of development segments to create is **8**, the network will be divided as follows.
 
 Example for 8 PJs:
 
@@ -215,56 +198,48 @@ VMs within each vnetpjxx segment can communicate freely.
 Access control for these VMs is enforced via **Security Groups** (SG).  
 This corresponds to Pritunl Organizations (Org).
 
----
-
 ### g. Pritunl mainlan-side IP  
 192.168.77.9  
 Used as the destination IP for port-forwarding on the home router.
-
----
 
 ### h. Pritunl vpndmzvn-side IP  
 192.168.80.2  
 Subnet used by Pritunl when routing clients into project networks.  
 A /30 is enough, but /24 is used here.
 
----
-
 ### i. UDP Port Numbers for OpenVPN and WireGuard
 
-You must configure port-forwarding on the main router.
+---
 
-OpenVPN: UDP 11856–11863 (*1) → 192.168.77.9  
-WireGuard: UDP 15952–15959 (*1) → 192.168.77.9  
+## Main Router Configuration Changes
+
+### Configure port forwarding (for OpenVPN and WireGuard × number of projects)
+
+OpenVPN    UDP 11856–11863 (*1) → Pritunl MainLAN-side IP (192.168.77.9)  
+WireGuard  UDP 15952–15959 (*1) → Pritunl MainLAN-side IP (192.168.77.9)
 
 *1: Arbitrary UDP ports.  
-Range = (Number of PJs = 8) × (Protocols = 2)
+The number of ports required equals the number of isolated development segments to be created  
+(8) × VPN protocols (OpenVPN + WireGuard = 2).
 
-Details:
+Breakdown:
 
-| PJ | OVPN(udp) | WG(udp) |
+| pj | OVPN (udp) | WG (udp) |
 |---:|-----------:|---------:|
-|01|11856|15952|
-|02|11857|15953|
-|03|11858|15954|
-|04|11859|15955|
-|05|11860|15956|
-|06|11861|15957|
-|07|11862|15958|
-|08|11863|15959|
+| 01 | 11856 | 15952 |
+| 02 | 11857 | 15953 |
+| 03 | 11858 | 15954 |
+| 04 | 11859 | 15955 |
+| 05 | 11860 | 15956 |
+| 06 | 11861 | 15957 |
+| 07 | 11862 | 15958 |
+| 08 | 11863 | 15959 |
 
+### Static Route
+  route 172.16.16.0/20 via 192.168.77.2     <---- route (f) via (b)
 ---
 
-### Static routes (Home Router)
-
-```
-route 192.168.80.0/24 via 192.168.77.2
-route 172.16.16.0/20 via 192.168.77.2
-```
-
----
-
-# Adding Proxmox SDN Bridges
+## Proxmox SDN Configuration
 
 ## Create SDN Zones
 
@@ -284,31 +259,27 @@ Datacenter → SDN → Zones → Add → Simple
 
 ---
 
-## Create VNets (Virtual Layer-2 Segments)
+### Create VNets (Virtual Layer-2 Segments)
 
-### DMZ VNet (vpn-dmz-vnet)
+#### DMZ VNet (vpn-dmz-vnet)
 
-Datacenter → SDN → VNets → Create
+- Datacenter → SDN → VNets → Create
+  - ID: **vpndmzvn**
+  - Alias: vpn-dmz-vnet
+  - Zone: vpndmz
+  - VLAN/Tag: *unset (Simple zone requires none)*
 
-- ID: **vpndmzvn**
-- Alias: vpn-dmz-vnet
-- Zone: vpndmz
-- VLAN/Tag: *unset (Simple zone requires none)*
+- **Subnets**
+  - Subnet: 192.168.80.0/24  
+  - GW: 192.168.80.1
 
-**Subnets**
-
-- Subnet: 192.168.80.0/24  
-- GW: 192.168.80.1
-
----
-
-### Create Development LAN VNets
-#### Create Vnet
-Datacenter → SDN → VNets → Create
-See table below for VNet and Zone
-#### Add Subnet
-Datacenter → SDN → VNets → <click vnet> → Subnets → Create 
-See table below for VNet, Subnet and GW
+#### Create Development (Tenant) LAN VNets
+- Create Vnet
+  - Datacenter → SDN → VNets → Create
+  - See table below for VNet and Zone
+- Add Subnet
+  - Datacenter → SDN → VNets → <click vnet> → Subnets → Create 
+  - See table below for VNet, Subnet and GW
 
 | VNet     | Zone    | Subnet         | GW |
 |----------|---------|----------------|---------------|
@@ -323,47 +294,41 @@ See table below for VNet, Subnet and GW
 
 > Modified in v1.1 to separate zone for each project. It is better if you use pool base ACL.
 
----
-
-### Apply SDN Configuration
+#### Apply SDN Configuration
 
 Datacenter → SDN → **Apply**
 
 ---
 
-# Datacenter Firewall Configuration
+### Create IPSet
+Create the following IPSet entries in advance to make management easier.
+- GUI → Datacenter → Firewall → IPSet
 
-GUI → Datacenter → Firewall → IPSet
+- [IPSET all_private_ip] # all_private_ip
+  - 10.0.0.0/8
+  - 127.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
 
-```
-[IPSET all_private_ip]
-10.0.0.0/8
-127.0.0.0/8
-172.16.0.0/12
-192.168.0.0/16
+- [IPSET devpjs] # 172.16.16.0/20
+  - 172.16.16.0/20
 
-[IPSET devpjs]
-172.16.16.0/20
+- [IPSET mainlan] # 192.168.77.0/24
+  - 192.168.77.0/24
 
-[IPSET mainlan]
-192.168.77.0/24
-
-[IPSET vpn_guest_pool]
-192.168.81.0/24
-```
+- [IPSET vpn_guest_pool] # 192.168.81.0/24
+  - 192.168.81.0/24
 
 ---
 
-### Enable Datacenter-Level Firewall
+## Proxmox Firewall Configuration
+- GUI → Datacenter → Firewall → Options
+  - Firewall: **Yes**
+  - Input policy: **DROP**
+  - Output policy: **ACCEPT**
+  - Forward policy: **ACCEPT**
 
-GUI → Datacenter → Firewall → Options
-
-- Firewall: **Yes**
-- Input policy: **DROP**
-- Output policy: **ACCEPT**
-- Forward policy: **ACCEPT**
-
-Also enable Firewall: Yes at Datacenter and Host levels.
+- Also enable Firewall: Yes at Datacenter and Host levels.
 
 > Important:  
 > If nested PVE instances are running inside this host, you will lose access to nested-VMs unless you disable the MAC Filter at  
@@ -397,35 +362,18 @@ Rules:
 
 ---
 
-# Placing the Pritunl VM on vpndmzvn
+## Create the Pritunl VM
+- NIC1 connected bridge: vmbr0    (IP: 192.168.77.9)
+- NIC2 connected bridge: vpndmzvn (IP: 192.168.80.2)
 
-NIC Configuration:
-- **NIC1 (vmbr0)** → IP: 192.168.77.9  
-- **NIC2 (vpndmzvn)** → IP: 192.168.80.2
-
-This provides routing + firewall separation.  
-Ports required:
-- WireGuard: **15952/UDP**
-- OpenVPN: **11856/UDP**
-
-The VM internally manages:
-
-- OpenVPN client pool: **192.168.81.0/24**
-- WireGuard client pool: **192.168.81.128/24**
-
----
-
-# Install Ubuntu 24.04 (Minimal)
-
-Take a snapshot first.
+### Install Ubuntu 24.04 (Minimal)
 
 ```
 sudo apt update -y
 sudo apt upgrade -y
 sudo shutdown -h 0
 ```
-
-Take another snapshot.
+Take a snapshot.
 
 ---
 
@@ -434,101 +382,68 @@ Take another snapshot.
 Reference:  
 https://docs.pritunl.com/kb/vpn/getting-started/installation
 
-Add package repositories:
-
 ```
+# Add package repositories:
+
 sudo tee /etc/apt/sources.list.d/mongodb-org.list << EOF
 deb [ signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse
 EOF
-```
 
-```
 sudo tee /etc/apt/sources.list.d/openvpn.list << EOF
 deb [ signed-by=/usr/share/keyrings/openvpn-repo.gpg ] https://build.openvpn.net/debian/openvpn/stable noble main
 EOF
-```
 
-```
 sudo tee /etc/apt/sources.list.d/pritunl.list << EOF
 deb [ signed-by=/usr/share/keyrings/pritunl.gpg ] https://repo.pritunl.com/stable/apt noble main
 EOF
-```
 
-Install dependencies:
-
-```
+# Install dependencies:
 sudo apt --assume-yes install gnupg
-```
 
-Import keys:
+# Import keys:
 
-```
 curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc \
  | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor --yes
-```
 
-```
 curl -fsSL https://swupdate.openvpn.net/repos/repo-public.gpg \
  | sudo gpg -o /usr/share/keyrings/openvpn-repo.gpg --dearmor --yes
-```
 
-```
 curl -fsSL https://raw.githubusercontent.com/pritunl/pgp/master/pritunl_repo_pub.asc \
  | sudo gpg -o /usr/share/keyrings/pritunl.gpg --dearmor --yes
-```
 
-Install packages:
+# Install packages:
 
-```
 sudo apt update
 sudo apt --assume-yes install pritunl openvpn mongodb-org wireguard wireguard-tools
-```
 
-Disable UFW:
+# Disable UFW:
 
-```
 sudo ufw disable
-```
 
-Start and enable services:
+# Start and enable services:
 
-```
 sudo systemctl start pritunl mongod
 sudo systemctl enable pritunl mongod
-```
-
----
 
 # Increase File Descriptor Limits
 
-```
 sudo sh -c 'echo "* hard nofile 64000" >> /etc/security/limits.conf'
 sudo sh -c 'echo "* soft nofile 64000" >> /etc/security/limits.conf'
 sudo sh -c 'echo "root hard nofile 64000" >> /etc/security/limits.conf'
 sudo sh -c 'echo "root soft nofile 64000" >> /etc/security/limits.conf'
-```
-
----
 
 # Bind MongoDB to Localhost
-
-```
 sudo sed -i "s/^ *bindIp: .*$/  bindIp: 127.0.0.1/" /etc/mongod.conf
 sudo systemctl restart mongod
 sudo ss -ltnp | grep 27017
-```
-
----
 
 # Check Pritunl Ports
-
-```
 ss -ltnp | egrep '9700|7774|7775|27017'
 ```
 
 ---
 
-# Get Setup Key
+### Get Setup Key
 
 ```
 sudo pritunl setup-key
@@ -542,7 +457,7 @@ b41ac4f73e034262a504d0b1bed96d37
 
 ---
 
-# Access the Web UI
+### Access the Web UI
 
 Open browser:
 
@@ -554,7 +469,7 @@ Enter the setup key.
 
 ---
 
-# Get Default Admin Password
+### Get Default Admin Password
 
 ```
 sudo pritunl default-password
@@ -567,26 +482,23 @@ username: "pritunl"
 password: "xxxxxxxxxxx"
 ```
 
-Login to the Web UI.
+### Pritunl GUI Setup
+
+#### Login to the Web UI.
 
 Enter:
 - Public IP (or FQDN)
 - Admin username
 - Admin password
 
----
 
-# Pritunl GUI Setup
-
-## Create Organization
+#### Create Organization
 
 GUI:  
 Users → Add Organization  
 Name example: **TestPrj1**
 
----
-
-## Add User
+#### Add User
 
 GUI:  
 Users → Add
@@ -598,28 +510,24 @@ Users → Add
 
 ---
 
-## Create Server
+#### Create Server
 
-Servers → Add Server
+- Servers → Add Server
+  - Name: **Server01**
+  - Port: **11856** (See OpenVPN port in Port Table below) 
+  - Protocol: **udp**
+  - Enable WireGuard: **ON**
+    - WG Port: **15952** (See WireGuard port in Port Table below) 
+  - DNS Server: 1.1.1.1
+  - Virtual Network: **192.168.81.0/28** (See Virtual Network List (OpenVPN))
+  - Virtual WG Network: **192.168.81.128/28** (Virtual Network List (WireGuard))
+  - Advanced Settings
+    - Restrict Routing (Split Tunnel): **ON**  
+      → Only routes defined under *Server → Routes* will be routed through VPN.
+    - Inter-Client Routing: **OFF**  
+      → Enforces user isolation.
+    - Bind Address: **192.168.77.9**
 
-- Name: **Server01**
-- Port: **11856** (OpenVPN)
-- Protocol: **udp**
-- Enable WireGuard: **ON**
-- WG Port: **15952** (WireGuard)
-- DNS Server: 1.1.1.1
-- Virtual Network: **192.168.81.0/28** (OpenVPN pool)
-- Virtual WG Network: **192.168.81.128/28** (WireGuard pool)
-
-### Advanced Settings
-
-- Restrict Routing (Split Tunnel): **ON**  
-  → Only routes defined under *Server → Routes* will be routed through VPN.
-- Inter-Client Routing: **OFF**  
-  → Enforces user isolation.
-- Bind Address: **192.168.77.9**
-
----
 
 ## Port Table
 
@@ -634,19 +542,34 @@ Servers → Add Server
 |07|11862|15958|
 |08|11863|15959|
 
----
+- Virtual Network List (OpenVPN)
 
-## Virtual Network List (OpenVPN)
+| No. | Subnets           | IP range               | # of clients per tenant |
+| --- | ----------------- | ----------------------------- |-:|
+| 1   | 192.168.81.0/28   | 192.168.81.2–192.168.81.14    |13|
+| 2   | 192.168.81.16/28  | 192.168.81.18–192.168.81.30   |13|
+| 3   | 192.168.81.32/28  | 192.168.81.34–192.168.81.46   |13|
+| 4   | 192.168.81.48/28  | 192.168.81.50–192.168.81.62   |13|
+| 5   | 192.168.81.64/28  | 192.168.81.66–192.168.81.78   |13|
+| 6   | 192.168.81.80/28  | 192.168.81.82–192.168.81.94   |13|
+| 7   | 192.168.81.96/28  | 192.168.81.98–192.168.81.110  |13|
+| 8   | 192.168.81.112/28 | 192.168.81.114–192.168.81.126 |13|
 
-Same as in previous tables.
+- Virtual Network List (WireGuard)
 
-## Virtual Network List (WireGuard)
+| No. | Subnets           | IP Range               | # of clients per tenant|
+| --- | ----------------- | ----------------------------- |-:|
+| 1   | 192.168.81.128/28 | 192.168.81.130–192.168.81.142 |13|
+| 2   | 192.168.81.144/28 | 192.168.81.146–192.168.81.158 |13|
+| 3   | 192.168.81.160/28 | 192.168.81.162–192.168.81.174 |13|
+| 4   | 192.168.81.176/28 | 192.168.81.178–192.168.81.190 |13|
+| 5   | 192.168.81.192/28 | 192.168.81.194–192.168.81.206 |13|
+| 6   | 192.168.81.208/28 | 192.168.81.210–192.168.81.222 |13|
+| 7   | 192.168.81.224/28 | 192.168.81.226–192.168.81.238 |13|
+| 8   | 192.168.81.240/28 | 192.168.81.242–192.168.81.254 |13|
 
-Same as in previous tables.
 
----
-
-# Development LAN VNets
+- Tenant LAN VNets
 
 | VNet | Subnet | GW |
 |------|------------------|-----------------|
@@ -659,195 +582,121 @@ Same as in previous tables.
 | vnetpj07 | 172.16.22.0/24 | 172.16.22.254 |
 | vnetpj08 | 172.16.23.0/24 | 172.16.23.254 |
 
----
 
-# Server Routes
+#### Create Org & Attach to Server
 
-Delete:
+- Users → Add Organization  
+- Name: Any organization name  
+  (Example: create pj01, pj02, ... pj08) (*1)
 
-```
-0.0.0.0/0
-```
+> *1 It is preferable to maintain a one-to-one relationship with the PJ ID.  
+> Specifying the actual company name of the users belonging to the organization is not recommended.  
+> Using the project name here generally makes operations easier.
 
-Add:
+- Create Organizations per project → Attach them to the corresponding server  
+  (user access enable/disable can be controlled here).
+  - Servers → Attach Organization
+  - Select an organization
 
-```
-172.16.16.0/24 … 172.16.31.0/24 (each /24 individually, NAT = OFF)
-```
+### Pritunl VM Hardening
 
-(*Do NOT add the entire /20.*)
+#### Change the Pritunl GUI Listen Address
+- Change the listen IP so that VPN users cannot access the Pritunl VM GUI.
 
----
-
-# Create Organization and Attach to Server
-
-Login to Pritunl:
-
-```
-https://<pritunl-ip>/
-```
-
-User: admin username  
-Pass: admin password  
-
-Users → Add Organization  
-Name: pj01, pj02, … pj08 (*recommended*)
-
-> Do NOT use company names  
-> Project-level Organizations help clean access control
-
-Attach Org to server:
-
-Servers → Attach Organization  
-Select the Org
-
----
-
-# Change Pritunl GUI Listen Address
-
-```
+```bash
 sudo vi /etc/pritunl.conf
+    "bind_addr": "192.168.77.9",  <---- change from 0.0.0.0
 ```
 
-Change:
-
-```
-"bind_addr": "192.168.77.9"
-```
-
-(from 0.0.0.0)
-
----
-
-# Prevent SSH Access From 192.168.80.1 to Pritunl Host
-
-```
+#### Change sshd Listen Address to Prevent SSH Access from 192.168.80.1
+```bash
 sudo vi /etc/ssh/sshd_config
-```
+ListenAddress 192.168.77.9    <------ add this line
 
-Add:
-
-```
-ListenAddress 192.168.77.9
-```
-
-Restart:
-
-```
 systemctl restart ssh
 reboot
 ```
 
----
-
-# Ensure No Processes Listen on 0.0.0.0
-
-```
+#### Verify that No Process Is Listening on 0.0.0.0
+```bash
 sudo ss -lntp | grep '0\.0\.0\.0'
 ```
 
-# When PJ VMs Cannot Ping the Gateway (172.16.1X.254)
+#### If PJVM Cannot Ping the Gateway (172.16.1X.254)
+- Node (pve1) → Firewall → Rules → Add the following rule at the top:
 
-On Proxmox host (pve1):
+  - Type: in
+  - Action: ACCEPT
+  - Protocol: icmp
 
-GUI → Firewall → Rules → **Add**
+#### Connectivity Test (3 Steps)
 
-Add this rule at the *top*:
+- 77 network → PJ: ping / traceroute (should succeed)
+- PJ → 77 network: ping (should fail / DNS should succeed)
+- VPN client → PJ: ssh / http (should succeed)
 
-- Type: **in**
-- Action: **ACCEPT**
-- Protocol: **icmp**
+#### Enable Firewall and Apply Security Group for Development VMs
 
-This allows ICMP Echo Requests from PJ networks to the gateway.
+- VM → Firewall → Insert: Security Group
+  - Security Group: pj-dev
+  - Enable: checked
 
----
+- VM → Firewall → Options
+  - Firewall: Yes
 
-# Connectivity Test (3 Steps)
 
-1. **77-network → PJ**  
-   - ping/traceroute → should work
+#### The Client Configuration Shows a Local Address as the Connection Target
 
-2. **PJ → 77-network**  
-   - ping → fails (expected)  
-   - DNS → works
+There is no UI for **Sync Address**, so set it directly in MongoDB:
 
-3. **VPN Client → PJ**  
-   - ssh / http → should work
-
----
-
-# Development VMs Must Have Firewall + Security Group Enabled
-
-VM → Firewall → insert Security Group  
-- Security Group: **pj-dev**  
-- Enable: **checked**
-
-VM → Firewall → Options  
-- Firewall: **Yes**
-
----
-
-# When Client Config Uses Local Address Instead of Public IP
-
-Pritunl GUI has no UI for “Sync Address”.  
-Modify MongoDB directly:
-
-```
-sudo pritunl mongodb
+```bash
+sudo pritunl mongodb   # open the mongo shell (or mongosh)
 use pritunl
 db.hosts.updateMany({}, {$set: {sync_address: "pritunl.zelogx.com"}})
-db.hosts.updateMany({}, {$set: {public_address: "ma.zelogx.com"}})
+db.hosts.updateMany({}, {$set: {public_address: "ma.zelogx.com"}})  # keep them consistent just in case
 quit
 sudo systemctl restart pritunl
 ```
 
----
 
-# Prevent VPN Clients From Using Pritunl for DNS
+#### Clients Attempt to Resolve DNS Through the VPN
 
-Disable DNS route distribution:
+Stop distributing the DNS IP to clients:
 
-```
+```bash
 sudo pritunl set vpn.dns_route false
 sudo systemctl restart pritunl
 ```
 
----
+#### Disable NAT and Use Pure Routing (for the specific server)
 
-# Disable NAT and Use Pure Routing (Per-Server)
+If VPN clients access development servers through NAT, all connections will appear to originate from the same user on the server side.  
+This makes proper auditing impossible.
 
-## 1. Get SID (Server ID)
+- First, check the **Server ID (SID)** for each server:
 
-```
+```bash
 sudo mongosh --quiet "mongodb://127.0.0.1:27017/pritunl" --eval '
 db.servers.find({}, {name:1}).forEach(d => print(d.name, d._id.toHexString()))
 '
-```
-
-Example output:
-
-```
 Server01 68e9993dd42cf24361d6cf31
 Server02 68e9b49376a47b6c2b180a3b
-...
+Server03 68f16ccc3b853aa0ced8694b
+Server04 68f16d093b853aa0ced86980
+Server05 68f16d553b853aa0ced869be
+Server06 68f16d863b853aa0ced869eb
+Server07 68f16db73b853aa0ced86a1a
 Server08 68f16dea3b853aa0ced86a47
 ```
 
----
+-- Check the current NAT setting  
+  sid="68e9993dd42cf24361d6cf31"   # Server01 ID
 
-## 2. Check NAT Status
-
-```
-sid="68e9993dd42cf24361d6cf31"
+```bash
 sudo mongosh --quiet "mongodb://127.0.0.1:27017/pritunl" --eval '
 const sid=ObjectId("'$sid'");
 db.servers.find({_id:sid},{name:1,network:1,routes:1}).forEach(doc=>printjson(doc));
 '
-```
-
-Example (NAT=true):
-
-```
 {
   _id: ObjectId('68e9993dd42cf24361d6cf31'),
   name: 'Server01',
@@ -855,18 +704,24 @@ Example (NAT=true):
   routes: [
     {
       network: '172.16.16.0/24',
+      comment: null,
+      metric: null,
       nat: true,
-      ...
+      nat_interface: null,
+      nat_netmap: null,
+      advertise: false,
+      vpc_region: null,
+      vpc_id: null,
+      net_gateway: false,
+      server_link: false
     }
   ]
 }
 ```
 
----
+- Set `nat` to `false` for all SIDs
 
-## 3. Disable NAT for All Servers
-
-```
+```bash
 sudo mongosh "mongodb://127.0.0.1:27017/pritunl" --eval '
 db.servers.updateMany(
   {},
@@ -875,9 +730,48 @@ db.servers.updateMany(
 '
 ```
 
----
+- Check the NAT setting again  
+  sid="68e9993dd42cf24361d6cf31"   # Server01 ID
 
-# Check iptables NAT Rules
+```bash
+sudo mongosh --quiet "mongodb://127.0.0.1:27017/pritunl" --eval '
+const sid=ObjectId("'$sid'");
+db.servers.find({_id:sid},{name:1,network:1,routes:1}).forEach(doc=>printjson(doc));
+'
+{
+  _id: ObjectId('68e9993dd42cf24361d6cf31'),
+  name: 'Server01',
+  network: '192.168.81.0/28',
+  routes: [
+    {
+      network: '172.16.16.0/24',
+      comment: null,
+      metric: null,
+      nat: true,
+      nat_interface: null,
+      nat_netmap: null,
+      advertise: false,
+      vpc_region: null,
+      vpc_id: null,
+      net_gateway: false,
+      server_link: false
+    }
+  ]
+}
+```
+
+- Set `nat` to `false` for all SIDs (repeat)
+
+```bash
+sudo mongosh "mongodb://127.0.0.1:27017/pritunl" --eval '
+db.servers.updateMany(
+  {},
+  { $set: { "routes.$[].nat": false } }
+);
+'
+```
+
+- Check iptables NAT Rules
 
 ```
 sudo iptables -t nat -S | grep -i pritunl
@@ -891,7 +785,7 @@ sudo systemctl restart pritunl
 
 ---
 
-# Return Route for VPN Client Pool
+#### Return Route for VPN Client Pool
 
 The VPN Client Pool (192.168.81.0/24) is not visible from pve1.
 
@@ -932,7 +826,8 @@ iface vpndmzvn
 
 ---
 
-# Reduce CPU Usage When Idle
+### Additional configurations
+- Reduce CPU Usage When Idle
 
 Edit:
 
@@ -952,9 +847,7 @@ Restart:
 sudo systemctl restart pritunl
 ```
 
----
-
-# Pritunl Organizations
+- Pritunl Organizations
 
 > **Do NOT use real company names** when creating Organizations.  
 > Each Organization is assigned entirely to a specific PJ-server.  
@@ -963,9 +856,7 @@ sudo systemctl restart pritunl
 GUI: Users → Add Organization  
 Name: any (recommended: 1 Org per PJ, e.g., pj01, pj02 …)
 
----
-
-# One-to-One Mapping for This Setup
+- One-to-One Mapping for This Setup
 
 Each Pritunl VPN server corresponds 1:1 with a development network:
 
@@ -976,9 +867,7 @@ Each Pritunl VPN server corresponds 1:1 with a development network:
 | … | … |
 | Server08 | vnetpj08 |
 
----
-
-# Example Organization–User Mapping
+- Example Organization–User Mapping
 
 | Org | User |
 |-----|------|
@@ -993,151 +882,93 @@ Pritunl assigns Orgs → Servers.
 
 Therefore:
 
-### Not possible  
-Assign only **UserAA + UserBA** to Server01.
+- Not possible  
+  - Assign only **UserAA + UserBA** to Server01.
 
-### Possible  
-- Entire OrgA  
-- Entire OrgB  
-- Or both
+- Possible  
+  - Entire OrgA  
+  - Entire OrgB  
+  - Or both
 
 This is why PJ-based Orgs are strongly recommended.
 
 ---
 
-# Selfcare-portal
+## Create a Self-Care Portal
 
-The following procedure grants VPN users access to the Proxmox dashboard and enables them to manage VMs.  
-If you do not want VPN users to manage VMs, skip this section.
+- The following procedure grants VPN users access to the Proxmox dashboard so they can operate VMs.
+- If VPN users should not be allowed to operate VMs, this step is not required.
 
-> Note: This requires a slight change in how zones are created. If you only created a single `devpj` zone, you should create separate `devpjXX` zones for each project.
+> Note:  
+> Because the zone creation method needs to be slightly changed,  
+> if only one `devpj` zone has been created, you must create `devpjXX` zones equal to the number of projects.
 
-## Objective
+- Goal for this section:
+  - Enable login to the Proxmox dashboard using `pj01Admin@pve`.
 
-After completing these steps, a user like `pj01-admin@pve` will be able to:
+- After logging in:
+  - Only VMs belonging to PJ01 are visible.
+  - Only PJ01 VMs can be started, stopped, opened via console, have their settings modified, snapshots created, and backups performed.
+  - New VMs for PJ01 can be created and deleted.
+  - VMs, storage, and node settings for other projects in the Datacenter cannot be accessed.
 
-- Log in to the Proxmox dashboard
-- See only PJ01 VMs
-- Start, stop, access console, change settings, manage snapshots, and perform backups on PJ01 VMs only
-- Create and delete VMs within PJ01
-- Cannot access other projects' VMs, storage, or node settings
-
----
-## Step-by-step procedure
-Enable VPN Users to Create VMs in PJ01
-
-### Create Pool, Group and User
-
-#### Create Pool
-
-Navigate to:  
-**Datacenter → Permissions → Pool → [Create]**
-
-- Name: `pj01`
-> Each project must have its own pool. If you create a pool for all development projects, users will be able to access all PJxx resources.
+- The following steps allow PJ01 VPN users to create VMs inside PJ01.
 
 ---
 
-#### Create Group
+### Create Group, Pool, and User
 
-Navigate to:  
-**Datacenter → Permissions → Groups → [Create]**
+- Create a Pool
+  - Datacenter → Permissions → Pool → [Create]
+  - Name: `pj01`
 
-- Name: `Pj01Admins`
+- Create a Group
+  - Datacenter → Permissions → Groups → [Create]
+  - Name: `Pj01Admins`
 
----
-
-#### Create User
-
-Navigate to:  
-**Datacenter → Permissions → Users → [Create]**
-
-- UserName: `pj01Admin`
-- Realm: `Proxmox VE authentication server`
-- Group: `Pj01Admins`
+- Create a User
+  - Datacenter → Permissions → Users → [Create]
+  - UserName: `pj01Admin`
+  - Realm: `Proxmox VE authentication server`
+  - Group: `Pj01Admins`
 
 ---
 
-### Grant Permissions and Roles to the Group
+### Assign Permissions and Roles to the Group
 
-Navigate to:  
-**Datacenter → Permissions → [Add]**
-
-- Path: `/pool/pj01`
-- Group: `Pj01Admins`
-- Role: `PVEAdmins`
-
-> This conceptually assigns the group and role to the pool.
+- Datacenter → Permissions → [Add]
+  - Path: `/pool/pj01`
+  - Group: `Pj01Admins`
+  - Role: `PVEAdmins`
 
 ---
 
-## Add Resources to the Pool
+### Add Resources to the Pool
 
-### Add Resources to the Pool (PJ01)
+Add resources to the resource pool (`PJ01`).
 
-Without this step, users will not be able to create VMs.
+- Assign existing VMs
+  - Datacenter → pj01 → Members → [Add] → Virtual Machine
 
-#### Assign Existing VMs
+- Assign storage
+  - Datacenter → pj01 → Members → [Add] → Storage
 
-Navigate to:  
-**DataCenter → pj01 → Members → [Add] → Virtual Machine**
-
-> Skip if there are no existing VMs.
-
-#### Assign Storage
-
-Navigate to:  
-**DataCenter → pj01 → Members → [Add] → Storage**
-
-> If storage is not assigned, `pj01admin` will not see any storage when creating a VM, preventing VM creation.  
-> You must assign storage for VM disks, ISO images, and local EFI storage.
-
-#### Assign SDN Zone Network
-
-Navigate to:  
-**DataCenter → PVE(node) → devpjXX → [Permissions] → [Add] → [Group Permission]**
-
-- Group: `Pj01Admins`
-- Role: `PVEAdmin`
-
-> Without this, users cannot assign a bridge to the VM NIC during creation.
-
-**Important:**  
-Permissions can only be assigned at the SDN Zone level.
-
-If the existing zone is a single `devpj` (containing all `vnetpjXX` networks), assigning it would allow users to create VMs on other projects' networks.
-
-It would also allow them to delete or add VNets from other projects.
-
-→ This is why zone-based logical boundaries are necessary.  
-→ **Zones must be created per-project** (MSL Setup v1.1 improvement). The procedure has been updated.
+- Assign SDN Zone network
+  - Datacenter → PVE (node) → devpjXX → [Permissions] → [Add] → [Group Permission]
+    - Group: `Pj01Admins`
+    - Role: `PVEAdmin`
 
 ---
 
-##### [Workaround] If You Only Created One `devpj` Zone
+### Allow VPN Users to Access the Proxmox Dashboard
 
-You can still assign permissions to individual VNets (though VPN users will not be able to create new VNets):
-
-Navigate to:  
-**DataCenter → Permissions → [Add] → [Group Permission]**
-
-- Path: `/sdn/zone/devpj/vnetpj01`  ← Important: `vnetpj01` is not displayed but can be specified
-- Group: `Pj01Admins`
-- Role: `PVEAdmin`
-
----
-
-## Allow VPN Users to Access Proxmox Dashboard
-
-### Add Node-Level Firewall Rules
-
-Add the following rules at the node level:
+- Add the following **Node-level firewall rule**
 
 | ✓ | Chain | Action | Macro | Protocol | Source              | S.Port | Destination           | D.Port | Log   |
-|----|-------|--------|-------|----------|---------------------|--------|-----------------------|-------:|-------|
-| ✓ | in    | ACCEPT | -     | tcp      | +dc/vpn_guest_pool  | -      | +sdn/vnetpjXX-gateway | 8006   | nolog |
+|---|-------|--------|-------|----------|---------------------|--------|-----------------------|------:|-------|
+| ✓ | in    | ACCEPT | -     | tcp      | +dc/vpn_guest_pool  | -      | +sdn/vnetpjXX-gateway | 8006  | nolog |
 
-Replace `XX` with `01` through `NUM_PJ`.
+`XX`: 01 – NUM_PJ
 
 ---
 ## Important security note: Always enable MFA for new users

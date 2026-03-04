@@ -213,7 +213,7 @@ Datacenter → SDN → Zones → Add → Simple
   - Subnet:192.168.80.0/24
   - GW:192.168.80.1
 
-#### 開発LAN用
+#### 開発(Tenant)LAN用
 - Create Vnet
   - Datacenter → SDN → VNets → Create
   - 作成するVNetとZoneの対応は以下の表を参照のこと
@@ -351,7 +351,7 @@ ss -ltnp | egrep '9700|7774|7775|27017'
 
 ### setup key取得
 ```
-masa@pritunl:~$ sudo pritunl setup-key
+sudo pritunl setup-key
 b41ac4f73e034262a504d0b1bed96d37
 ```
 
@@ -448,7 +448,7 @@ Administrator default password:
 | 7   | 192.168.81.224/28 | 192.168.81.226–192.168.81.238 |13|
 | 8   | 192.168.81.240/28 | 192.168.81.242–192.168.81.254 |13|
 
-- 開発用LAN
+- 開発用(Tenant)LAN
 
 | Server   | Subnet         | GW            |
 | -------- |----------------|---------------|
