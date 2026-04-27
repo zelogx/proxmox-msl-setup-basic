@@ -6,7 +6,7 @@
 
 Zelogx™ MSL Setupは、Proxmox SDN、PVE-Firewall、Pritunlを活用し、L2レベルで完全隔離されたセキュアな開発環境をProxmox上に構築するためのオープンソース・リファレンスです。
 
-公式サイト: https://www.zelogx.com/
+公式サイト: https://www.zelogx.com/ja/
 
 ⚠️ **このリポジトリは、Zelogx™ MSL Setup の「初期バージョン（手動構築手順）」を保存するためのアーカイブです。**<BR>
 この設計が役立つと思ったら、ぜひ ⭐ (Star) や “Watch” をお願いします。
@@ -37,7 +37,7 @@ Proxmox VEサーバ一台で
 - 既設(企業/家庭)LANは汚さないゼロトラスト構成。既存LANにはVPNトンネル、DNS問い合わせ以外のパケットは通りません。
 - 分離されたPJごとの開発環境をVPNで安全にリモートチームメンバへ公開
 - VPNクライアントユーザの所属、ユーザ管理、VPN接続クライアント証明書生成の自動化。GUI管理。配布も簡単。
-- 各PJ毎のVPNサーバ(起動停止)もGUIから可能。VPNプロトコルはOpenVPNまたはWireguardを使用。
+- 各PJ毎のVPNサーバ(起動停止)もGUIから可能。VPNプロトコルはOpenVPNまたはWireGuardを使用。
 - VLAN対応機器は不要
 
 うんちく良いから早く構築方法教えてという方は[こちら](#2-構築手順-quickstart)
@@ -51,21 +51,6 @@ Proxmox VEサーバ一台で
 - サーバ1台(NUCクラスのMini PC)＋OSSだけでパブリッククラウドで数十万/月クラスの仮想環境を入手可能。クラウド費用ほぼゼロ、必要なのは開発用サーバ＋電気代千円程度/月(Mini PCの場合)
 - サーバさえあれば、ほぼ無償でセキュア分散開発環境、砂場(サンドボックス)環境、デモ環境、さらにはステージング環境が手に入る。
 - この手の事を製品で行おうとすると以下のような機器の導入費、保守コスト（数百万、数千万～）が発生しこれらコストの削減が可能。多少語弊があるかもしれませんが参考までに。
-
-**参考：**
-
-| ベンダー／製品 | 領域・強み | 本セットアップとの比較 |
-| ------------- | --------- | ------------------------- |
-| Palo Alto Networks 「Prisma Access」など | SASE／ZTNA (Zero-Trust Network Access)をクラウド規模で提供。エンタープライズ向けに広範囲機能。 ([cloudnuro.ai][1]) | 巨大な構成・コスト高。自社ハイパーコンバージド／オンプレ重視環境には"オーバースペック" |
-| Zscaler 「Zero Trust Exchange」 | 世界中にエッジを持ち、リモートユーザ／クラウドアクセスに強い。 ([cloudnuro.ai][1]) | オンプレ専用／仮想マルチテナントネットワークにはカスタマイズが必要。Proxmox＋自前環境との親和性低め |
-| Check Point Software Technologies＋Perimeter 81 | ゼロトラストWAN／VPN置換ソリューションを買収展開。 ([Wikipedia][2]) | 大企業向け価格帯、設定・運用が複雑。小規模／中規模で"手軽に導入できる仮想マルチテナントVPN＋開発環境隔離"構成では割高／難易度高い |
-| StrongDM    | インフラアクセス管理（SSH/RDP／データベース）に特化。 ([Wikipedia][3]) | ネットワーク全体隔離・仮想スイッチ階層・VPN＋マルチテナント構成までは含まれない。君の構成がこの補完領域を突ける           |
-| JumpCloud   | クラウドディレクトリ／リモートアクセス管理など幅広く。 ([Wikipedia][4]) | ネットワーク隔離・仮想ブリッジ・オンプレ仮想ハイパーバイザ深掘り構成までは標準ではカバーしていない                   |
-
-[1]: https://www.cloudnuro.ai/blog/top-10-secure-access-service-edge-sase-solutions-for-zero-trust-networking?utm_source=chatgpt.com "Top 10 Secure Access Service Edge (SASE) Solutions for ..."
-[2]: https://en.wikipedia.org/wiki/Perimeter_81?utm_source=chatgpt.com "Perimeter 81"
-[3]: https://en.wikipedia.org/wiki/StrongDM?utm_source=chatgpt.com "StrongDM"
-[4]: https://en.wikipedia.org/wiki/JumpCloud?utm_source=chatgpt.com "JumpCloud"
 
 ### 1.3. 利用ソフトウェアのライセンス
 
@@ -213,7 +198,7 @@ Proxmox VEが接続しているサブネットワーク以外にセグメント�
 
 #### (a) **MainLan(vmbr0既設):** (例：`192.168.77.0/24` GW: `.254`)
    - 会社・自宅ラボのメインのLANのネットワークアドレス。
-   - スマートスピーカーやTV, ゲーム機, 従業員, 家族のPC, スマホ, LAB用のVM(webサーバ, Cloudflare, nextcloud,samba, 個人用OpenVPN/Wireguard, Unbound DNSなど)などが接続されていると思いますが、各PJに分離されたVMからは、PVE Firewall, vnetにより完全に分離されるので、安全。
+   - スマートスピーカーやTV, ゲーム機, 従業員, 家族のPC, スマホ, LAB用のVM(webサーバ, Cloudflare, nextcloud,samba, 個人用OpenVPN/WireGuard, Unbound DNSなど)などが接続されていると思いますが、各PJに分離されたVMからは、PVE Firewall, vnetにより完全に分離されるので、安全。
    - 後続の「Pritunlのmainlan側のIP」がこのIPレンジ内でなくてはならない。
    - インターネットルータの多くはLAN側IPにしかポート転送できないので、インターネットルータの直下のLANに接続してあることが望ましい。
 
@@ -247,7 +232,7 @@ Proxmox VEが接続しているサブネットワーク以外にセグメント�
    - Pritunlのクライアントが各PJ用サブネットに出ていくときのサブネットです。最低/30あれば間に合いますがここでは大きく/24で取ってます。
 
 #### (i) **UDP ports** 
-   - 作成する開発用分離セグメントの作成数(PJ数) x 2　(OpenVPN+Wireguard分):(`合計16ポート 11856-11863, 15952-15959`)
+   - 作成する開発用分離セグメントの作成数(PJ数) x 2　(OpenVPN+WireGuard分):(`合計16ポート 11856-11863, 15952-15959`)
 
 > **注意:** ルーターによっては、ポートフォワードできる数に制限がある。Buffaloルータでは最大32個でした。なので、5を決める際にはルータの最大ポートフォーワード数も念頭に置いて決定すること。
 > また、IPoEでNDプロキシ/MAP-E/DS-Liteなどを使用している場合は使用できるポートに制限があるので、あらかじめ確認する必要がある。
@@ -259,7 +244,7 @@ PVEには固定IPを振ってください。
 
 ### 2.4. Quickstart
 
-build-instructions_jp,mdに従って設定してください
+build-instructions-vxlan_jp,mdに従って設定してください
 
 ## 3. ライセンス・制限事項・EULA
 - 本リポジトリに含まれる ドキュメント、図面、構成手順、設定知識 は、
@@ -285,10 +270,3 @@ build-instructions_jp,mdに従って設定してください
 ある意味自由を奪ってセキュリティとコストの自由度を担保してみた結果、こうなったという一例です。
 
 なお、この記事は家庭LABおじさんも出来るレベルで記載してますが、中小ソフトハウス、少人数SaaS開発、SIer、SES会社向けです。
-
-## 5. 既知の問題 (Known Issues)
-
-- **ネットワーク図のテーマ連動について**  
-   SVGベースのネットワーク図の配色は、ProxmoxのGUIテーマ（Light/Dark）には**連動しません**。  
-   代わりに、OS／ブラウザ側の `prefers-color-scheme` 設定に従って描画されます。  
-   そのため、OSやブラウザがライトテーマの場合は、Proxmox GUIをダークテーマにしていても図はライトテーマ相当の配色で表示される場合があります（その逆も同様です）。

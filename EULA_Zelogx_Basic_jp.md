@@ -62,9 +62,8 @@ Zelogx 公式リポジトリへのリンク掲載は常に許可され、推奨�
 
 ### 2.4 競合および商用利用の禁止（Competitive or Commercial Use Prohibited）
 本資料を利用して、競合する製品・サービス・ツール等を設計・開発することはできません。
-
 また、本資料をコンサルティング、受託開発、研修、その他の有償サービスに利用することも禁止します。
-
+顧客向けの商用展開には、MSL Setup Pro Corporate ライセンスが必要です。
 ---
 
 ### 2.5 Basic Edition 文書の商用利用禁止（Commercial Use of Basic Edition Prohibited）
@@ -79,7 +78,7 @@ Basic Edition の文書を商用目的で使用することは禁止します。
 以下の利用は許可されます。
 
 - 本資料の閲覧および個人・内部での学習目的での利用
-- MIT ライセンスと明示されたコード片の利用
+- コード片の利用
 - 利用者自身の経験を記述したブログ記事・レビュー・技術ノートの公開  
   （ただし、原文の複製は禁止）
 
@@ -117,7 +116,7 @@ Basic Edition の文書を商用目的で使用することは禁止します。
 
 ## 8. お問い合わせ（Contact）
 Zelogx Project  
-https://github.com/zelogx
+https://www.zelogx.com/ja/contact/
 
 ---
 

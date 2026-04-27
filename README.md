@@ -74,17 +74,6 @@ For those who just want to build it now --- jump to [Quickstart](#2-quickstart).
 > Equivalent commercial setups cost millions of yen with maintenance contracts.\
 > This achieves the same goal for (almost) zero cost.
 
-### 1.3. Reference: Commercial Alternatives
-
-| Vendors / Product                  | Strength                                          | Weakness / Gaps You Can Fill                                            |
-| ---------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
-| Palo Alto Networks “Prisma Access” | Enterprise-grade SASE / ZTNA coverage             | Overkill for small on-prem or hybrid labs                               |
-| Zscaler “Zero Trust Exchange”      | Global edge presence, strong remote-user security | Needs customization for on-prem virtualized networks                    |
-| Check Point + Perimeter81          | Integrated Zero-Trust WAN                         | Complex setup, high cost for small deployments                          |
-| StrongDM                           | Access management (SSH / RDP / DB)                | Does not handle virtual-network segmentation or VPN-based multi-tenancy |
-| JumpCloud                          | Wide SaaS IAM coverage                            | Limited to identity layer, not virtual network control                  |
-
-
 ### 1.4. Licensing
 
 -   **Pritunl**\
@@ -228,7 +217,7 @@ However, all VMs belonging to individual projects (VMnPJxx) are completely isola
 
 ### 2.3. Installation (Proxmox VE 9.0)
 
-Please follow build-instructions.md
+Please follow build-instructions-vxlan.md
 
 ### 3. License, Limitations & EULA
 
@@ -251,13 +240,3 @@ This architecture proves that small software teams, SaaS startups, and serious h
 
 Security, performance, and independence don’t have to be trade-offs.
 They can coexist — by design.
-
-## 5. Known Issues
-
-- **Network diagram theme behavior**  
-    The color scheme of SVG-based network diagrams does **not** follow the Proxmox GUI theme (Light/Dark).  
-    Instead, it respects the OS / browser `prefers-color-scheme` setting.  
-    As a result, when your OS or browser is set to light mode, the diagram may appear with light-theme colors even if the Proxmox GUI is using the dark theme (and vice versa).
-
-
-

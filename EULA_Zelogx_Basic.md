@@ -60,6 +60,7 @@ or any similar automated system.
 ### 2.4 Competitive or Commercial Use Prohibited
 Users may not use the Materials to design or develop competing systems, products, tools, or services.
 Users may not use the Materials for consulting, subcontracting, training, or other paid services.
+Commercial deployment for clients requires MSL Setup Pro Corporate license.
 
 ---
 
@@ -111,7 +112,7 @@ The latest version will be published in the official repository.
 
 ## 8. Contact
 Zelogx Project  
-https://github.com/zelogx
+https://www.zelogx.com/contact/
 
 ---
 
