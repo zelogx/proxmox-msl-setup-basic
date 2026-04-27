@@ -212,7 +212,7 @@ However, all VMs belonging to individual projects (VMnPJxx) are completely isola
 - Number of isolated development segments (projects) × 2 = (16)
 
 **Note:**
-- Some routers limit the number of port-forwarding entries. For example, Buffalo routers allow a maximum of 32. Therefore, when deciding value 5, you should also consider your router’s maximum port-forwarding capacity.
+- Some routers limit the number of port-forwarding entries. For example, Buffalo routers allow a maximum of 32. Therefore, when deciding value e, you should also consider your router’s maximum port-forwarding capacity.
 - Also, if you are using IPoE with ND Proxy / MAP-E / DS-Lite, there are restrictions on available ports, so you must check in advance.
 
 ### 2.3. Installation (Proxmox VE 9.0)
