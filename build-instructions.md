@@ -111,7 +111,7 @@ It is sufficient to confirm that the network addresses / CIDR ranges defined bel
 
 ### a. MainLAN (existing vmbr0): 192.168.77.0/24  GW: .254
 → Home lab and household network.  
-The main CentOS Stream 10 server (.1) runs the Zelogx web server, Nextcloud, Samba, personal OpenVPN/WireGuard, Unbound DNS, etc.  
+The main server (.1) runs web server, Nextcloud, Samba, personal OpenVPN/WireGuard, Unbound DNS, etc.  
 It also includes various home devices such as Alexa, TVs, PS5, the internet router, family PCs, smartphones, and more.
 
 The "Pritunl MainLAN-side IP" configured later **must be within this IP range**.

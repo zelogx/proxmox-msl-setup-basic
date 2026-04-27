@@ -89,7 +89,7 @@
 以下で定義するネットワークアドレス/CIDRが他で使用されていない事さえ確認できれば良い。
 
 ### a. MainLAN(vmbr0既設) : 192.168.77.0/24: GW:.254
-　→　自宅ラボ・家電 mainのcentos stream 10(.1 zelogx webサーバ, nextcloud, samba, 個人用OpenVPN/WireGuard, Unbound DNSなど), 家庭のalexaやTV, PS5, Internet router, 家族のPC, スマホなど様々。
+　→　自宅ラボ・家電 mainのserver(.1 webサーバ, nextcloud, samba, 個人用OpenVPN/WireGuard, Unbound DNSなど), 家庭のalexaやTV, PS5, Internet router, 家族のPC, スマホなど様々。
 　後続の「PritunlのMainLAN側のIP」がこのIPレンジ内でなくてはならない。
 　インターネットルータの多くはLAN側IPにしかポート転送できないので、インターネットルータの直下のLANに接続してあることが望ましい。
 
