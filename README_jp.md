@@ -244,7 +244,7 @@ PVEには固定IPを振ってください。
 
 ### 2.4. Quickstart
 
-build-instructions-vxlan_jp,mdに従って設定してください
+build-instructions-vxlan_jp.mdに従って設定してください
 
 ## 3. ライセンス・制限事項・EULA
 - 本リポジトリに含まれる ドキュメント、図面、構成手順、設定知識 は、
